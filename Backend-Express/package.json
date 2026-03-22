@@ -1,0 +1,32 @@
+{
+  "name": "sgeh-backend",
+  "version": "1.0.0",
+  "description": "Sistema de Gestión de Eventos y Asistencias - Backend",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "keywords": [
+    "eventos",
+    "asistencias",
+    "api",
+    "nodejs",
+    "express",
+    "postgresql"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.99.3",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "jsonwebtoken": "^9.0.3",
+    "pdfkit": "^0.18.0",
+    "pg": "^8.13.0",
+    "qrcode": "^1.5.4",
+    "uuid": "^13.0.0"
+  }
+}
