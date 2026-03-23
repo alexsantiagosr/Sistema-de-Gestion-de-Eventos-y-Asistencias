@@ -1,9 +1,9 @@
-# 🏥 SGEH - Sistema de Gestión de Eventos y Asistencias Hospitalarias
+# 🎓 SGEA - Sistema de Gestión de Eventos y Asistencias
 
 [![Status](https://img.shields.io/badge/status-production%20ready-green)]()
 [![License](https://img.shields.io/badge/license-MIT-blue)]()
 
-Sistema full-stack para gestionar eventos académicos y control de asistencias mediante códigos QR.
+Sistema full-stack para gestionar eventos y control de asistencias mediante códigos QR.
 
 ---
 

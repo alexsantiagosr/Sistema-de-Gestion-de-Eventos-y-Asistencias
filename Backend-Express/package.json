@@ -5,6 +5,7 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
+    "predev": "kill-port 5000",
     "dev": "node --watch src/server.js"
   },
   "keywords": [
@@ -28,5 +29,8 @@
     "pg": "^8.13.0",
     "qrcode": "^1.5.4",
     "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "kill-port": "^2.0.1"
   }
 }

@@ -30,7 +30,7 @@ services:
   # Frontend (Nginx)
   frontend:
     build:
-      context: ./frontend
+      context: ./Frontend-React
       dockerfile: Dockerfile
       args:
         - VITE_API_URL=http://localhost:5000/api

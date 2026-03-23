@@ -1,5 +1,6 @@
 const EnrollmentModel = require('../models/EnrollmentModel');
 const EventModel = require('../models/EventModel');
+const { v4: uuidv4 } = require('uuid');
 
 /**
  * Servicio de Inscripciones
@@ -7,7 +8,7 @@ const EventModel = require('../models/EventModel');
  */
 const EnrollmentService = {
   /**
-   * Inscribir usuario a un evento
+   * Inscribir usuario a un evento (con UPSERT para reinscripción)
    * @param {string} userId - UUID del usuario
    * @param {string} eventId - UUID del evento
    */
@@ -34,16 +35,52 @@ const EnrollmentService = {
       throw error;
     }
 
-    // Verificar que el usuario no esté ya inscrito
+    // Verificar inscripción existente (UPSERT logic)
     const existingEnrollment = await EnrollmentModel.findByUserAndEvent(userId, eventId);
-    if (existingEnrollment && existingEnrollment.status === 'active') {
-      const error = new Error('Ya estás inscrito en este evento');
-      error.code = 'ALREADY_ENROLLED';
-      throw error;
+
+    if (existingEnrollment) {
+      // Activa → error
+      if (existingEnrollment.status === 'active') {
+        const error = new Error('Ya estás inscrito en este evento');
+        error.code = 'ALREADY_ENROLLED';
+        throw error;
+      }
+
+      // Usada → error
+      if (existingEnrollment.status === 'used') {
+        const error = new Error('Ya asististe a este evento');
+        error.code = 'ALREADY_ATTENDED';
+        throw error;
+      }
+
+      // Cancelada → reactivar con nuevo QR
+      if (existingEnrollment.status === 'cancelled') {
+        const newQrToken = `ENROLL-${uuidv4()}-${Date.now()}`;
+
+        const updated = await EnrollmentModel.update(existingEnrollment.id, {
+          status: 'active',
+          qr_token: newQrToken,
+          check_in: null,
+          check_out: null
+        });
+
+        // Decrementar cupos manualmente (el trigger solo aplica en INSERT)
+        await EventModel.update(eventId, {
+          available_slots: event.available_slots - 1
+        });
+
+        return {
+          message: 'Inscripción reactivada exitosamente',
+          enrollment: updated
+        };
+      }
     }
 
-    // Crear inscripción (el trigger decrementa available_slots automáticamente)
-    const enrollment = await EnrollmentModel.create({ user_id: userId, event_id: eventId });
+    // No existe → INSERT normal
+    const enrollment = await EnrollmentModel.create({
+      user_id: userId,
+      event_id: eventId
+    });
 
     return {
       message: 'Inscripción realizada exitosamente',
