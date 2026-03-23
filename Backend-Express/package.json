@@ -8,6 +8,9 @@
     "predev": "kill-port 5000",
     "dev": "node --watch src/server.js"
   },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "keywords": [
     "eventos",
     "asistencias",
