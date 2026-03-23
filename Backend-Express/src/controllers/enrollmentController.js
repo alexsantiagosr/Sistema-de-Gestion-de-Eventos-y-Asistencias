@@ -18,23 +18,12 @@ const EnrollmentController = {
 
       res.status(201).json(result);
     } catch (error) {
-      // Errores conocidos (400 Bad Request)
-      const knownErrors = [
-        'EVENT_NOT_FOUND',
-        'EVENT_NOT_ACTIVE',
-        'NO_AVAILABLE_SLOTS',
-        'ALREADY_ENROLLED',
-        'ALREADY_ATTENDED'
-      ];
-
-      if (knownErrors.includes(error.code)) {
+      if (['EVENT_NOT_FOUND', 'EVENT_NOT_ACTIVE', 'NO_AVAILABLE_SLOTS', 'ALREADY_ENROLLED'].includes(error.code)) {
         return res.status(400).json({
-          error: 'Acción no permitida',
+          error: 'No se puede realizar la inscripción',
           message: error.message
         });
       }
-
-      // Errores desconocidos (500 Internal Server Error)
       next(error);
     }
   },
