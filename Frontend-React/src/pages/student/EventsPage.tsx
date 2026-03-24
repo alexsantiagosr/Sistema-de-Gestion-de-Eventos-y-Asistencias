@@ -64,16 +64,16 @@ export default function EventsPage() {
   return (
     <div>
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Eventos Disponibles</h1>
-        <p className="text-secondary mt-1">Explora e inscríbete en los eventos disponibles</p>
+      <div className="mb-6 lg:mb-8">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Eventos Disponibles</h1>
+        <p className="text-secondary mt-1 text-sm sm:text-base">Explora e inscríbete en los eventos disponibles</p>
       </div>
 
       {/* Filters */}
-      <Card className="mb-6">
+      <Card className="mb-4 lg:mb-6">
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="md:col-span-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="sm:col-span-2">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
@@ -122,44 +122,44 @@ export default function EventsPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
           {events.map((event) => (
             <Card key={event.id} className="flex flex-col">
               {/* Event Header with Gradient */}
               <div
-                className={`h-32 rounded-t-2xl relative p-6 ${event.modality === 'presencial'
-                    ? 'bg-gradient-to-br from-orange-400 to-orange-600'
-                    : event.modality === 'virtual'
-                      ? 'bg-gradient-to-br from-indigo-400 to-indigo-600'
-                      : 'bg-gradient-to-br from-cyan-400 to-cyan-600'
+                className={`h-28 sm:h-32 rounded-t-2xl relative p-4 sm:p-6 ${event.modality === 'presencial'
+                  ? 'bg-gradient-to-br from-orange-400 to-orange-600'
+                  : event.modality === 'virtual'
+                    ? 'bg-gradient-to-br from-indigo-400 to-indigo-600'
+                    : 'bg-gradient-to-br from-cyan-400 to-cyan-600'
                   }`}
               >
-                <div className="absolute top-4 right-4">
+                <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
                   {getModalityBadge(event.modality)}
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2 line-clamp-2">
+                <h3 className="text-lg sm:text-xl font-bold text-white mb-2 line-clamp-2">
                   {event.title}
                 </h3>
               </div>
 
-              <CardContent className="flex-1 flex flex-col">
+              <CardContent className="flex-1 flex flex-col p-4 sm:p-6">
                 {/* Event Details */}
-                <div className="space-y-3 flex-1">
-                  <div className="flex items-center text-sm text-secondary">
+                <div className="space-y-2 sm:space-y-3 flex-1">
+                  <div className="flex items-center text-xs sm:text-sm text-secondary">
                     <Calendar className="w-4 h-4 mr-2" />
                     {format(new Date(event.date), "dd 'de' MMMM, yyyy", { locale: es })}
                   </div>
-                  <div className="flex items-center text-sm text-secondary">
+                  <div className="flex items-center text-xs sm:text-sm text-secondary">
                     <Clock className="w-4 h-4 mr-2" />
                     {event.duration} minutos
                   </div>
                   {event.location && (
-                    <div className="flex items-center text-sm text-secondary">
+                    <div className="flex items-center text-xs sm:text-sm text-secondary">
                       <MapPin className="w-4 h-4 mr-2" />
                       <span className="line-clamp-1">{event.location}</span>
                     </div>
                   )}
-                  <div className="flex items-center text-sm">
+                  <div className="flex items-center text-xs sm:text-sm">
                     <Users className="w-4 h-4 mr-2" />
                     <span
                       className={
@@ -170,20 +170,20 @@ export default function EventsPage() {
                             : 'text-success font-medium'
                       }
                     >
-                      {event.available_slots} cupos disponibles de {event.capacity}
+                      {event.available_slots} cupos de {event.capacity}
                     </span>
                   </div>
                 </div>
 
                 {/* Description */}
                 {event.description && (
-                  <p className="text-sm text-secondary mt-4 line-clamp-2">
+                  <p className="text-xs sm:text-sm text-secondary mt-3 sm:mt-4 line-clamp-2">
                     {event.description}
                   </p>
                 )}
 
                 {/* Actions */}
-                <div className="mt-4 pt-4 border-t border-gray-100">
+                <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-100">
                   <Link to={`/events/${event.id}`}>
                     <Button variant="secondary" className="w-full mb-2">
                       Ver detalle

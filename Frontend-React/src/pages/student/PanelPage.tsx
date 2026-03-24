@@ -59,34 +59,34 @@ export default function PanelPage() {
   return (
     <div>
       {/* Welcome */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">
+      <div className="mb-6 lg:mb-8">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
           ¡Hola, {user?.name}! 👋
         </h1>
-        <p className="text-secondary mt-1">
+        <p className="text-secondary mt-1 text-sm sm:text-base">
           Bienvenido a tu panel de control
         </p>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-6 lg:mb-8">
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
             <Link key={stat.title} to={stat.link}>
               <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                <CardContent>
+                <CardContent className="p-4 lg:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-secondary">
+                      <p className="text-xs sm:text-sm font-medium text-secondary">
                         {stat.title}
                       </p>
-                      <p className="text-3xl font-bold text-gray-900 mt-2">
+                      <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-2">
                         {stat.value}
                       </p>
                     </div>
-                    <div className={`p-3 rounded-xl ${stat.bgColor}`}>
-                      <Icon className={`w-6 h-6 ${stat.color}`} />
+                    <div className={`p-2 sm:p-3 rounded-xl ${stat.bgColor}`}>
+                      <Icon className={`w-5 h-5 sm:w-6 sm:h-6 ${stat.color}`} />
                     </div>
                   </div>
                 </CardContent>
@@ -97,10 +97,10 @@ export default function PanelPage() {
       </div>
 
       {/* Upcoming Events */}
-      <Card className="mb-6">
+      <Card className="mb-4 lg:mb-6">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Próximos Eventos</CardTitle>
+            <CardTitle className="text-base sm:text-lg">Próximos Eventos</CardTitle>
             <Link to="/events">
               <Button variant="ghost" size="sm">
                 Ver todos
@@ -113,7 +113,7 @@ export default function PanelPage() {
           {upcomingEvents.length === 0 ? (
             <div className="text-center py-8">
               <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-secondary mb-4">
+              <p className="text-secondary mb-4 text-sm sm:text-base">
                 No tienes eventos próximos inscritos
               </p>
               <Link to="/events">
@@ -121,17 +121,17 @@ export default function PanelPage() {
               </Link>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {upcomingEvents.map((enrollment) => (
                 <div
                   key={enrollment.id}
-                  className="flex items-center justify-between p-4 bg-gray-50 rounded-xl"
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 bg-gray-50 rounded-xl gap-3 sm:gap-0"
                 >
-                  <div className="flex-1">
-                    <h4 className="font-medium text-gray-900">
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium text-gray-900 text-sm sm:text-base truncate">
                       {enrollment.events?.title}
                     </h4>
-                    <div className="flex items-center text-sm text-secondary mt-1">
+                    <div className="flex items-center text-xs sm:text-sm text-secondary mt-1">
                       <Calendar className="w-4 h-4 mr-2" />
                       {format(
                         new Date(enrollment.events?.date || ''),
@@ -140,8 +140,8 @@ export default function PanelPage() {
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center space-x-3">
-                    <Badge variant="success">Inscrito</Badge>
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <Badge variant="success" className="flex-shrink-0">Inscrito</Badge>
                     <Link to={`/events/${enrollment.event_id}`}>
                       <Button variant="secondary" size="sm">
                         Ver
@@ -158,33 +158,33 @@ export default function PanelPage() {
       {/* Quick Actions */}
       <Card>
         <CardHeader>
-          <CardTitle>Accesos Rápidos</CardTitle>
+          <CardTitle className="text-base sm:text-lg">Accesos Rápidos</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <Link to="/events">
-              <div className="p-4 bg-primary/10 rounded-xl hover:bg-primary/20 transition-colors cursor-pointer">
-                <Calendar className="w-8 h-8 text-primary mb-2" />
-                <p className="font-medium text-gray-900">Explorar Eventos</p>
-                <p className="text-sm text-secondary mt-1">
+              <div className="p-3 sm:p-4 bg-primary/10 rounded-xl hover:bg-primary/20 transition-colors cursor-pointer">
+                <Calendar className="w-6 h-6 sm:w-8 sm:h-8 text-primary mb-2" />
+                <p className="font-medium text-gray-900 text-sm sm:text-base">Explorar Eventos</p>
+                <p className="text-xs sm:text-sm text-secondary mt-1">
                   Inscríbete en nuevos eventos
                 </p>
               </div>
             </Link>
             <Link to="/my-enrollments">
-              <div className="p-4 bg-green-100 rounded-xl hover:bg-green-200 transition-colors cursor-pointer">
-                <Ticket className="w-8 h-8 text-green-600 mb-2" />
-                <p className="font-medium text-gray-900">Mis Inscripciones</p>
-                <p className="text-sm text-secondary mt-1">
+              <div className="p-3 sm:p-4 bg-green-100 rounded-xl hover:bg-green-200 transition-colors cursor-pointer">
+                <Ticket className="w-6 h-6 sm:w-8 sm:h-8 text-green-600 mb-2" />
+                <p className="font-medium text-gray-900 text-sm sm:text-base">Mis Inscripciones</p>
+                <p className="text-xs sm:text-sm text-secondary mt-1">
                   Gestiona tus eventos
                 </p>
               </div>
             </Link>
             <Link to="/certificates">
-              <div className="p-4 bg-purple-100 rounded-xl hover:bg-purple-200 transition-colors cursor-pointer">
-                <Award className="w-8 h-8 text-purple-600 mb-2" />
-                <p className="font-medium text-gray-900">Certificados</p>
-                <p className="text-sm text-secondary mt-1">
+              <div className="p-3 sm:p-4 bg-purple-100 rounded-xl hover:bg-purple-200 transition-colors cursor-pointer">
+                <Award className="w-6 h-6 sm:w-8 sm:h-8 text-purple-600 mb-2" />
+                <p className="font-medium text-gray-900 text-sm sm:text-base">Certificados</p>
+                <p className="text-xs sm:text-sm text-secondary mt-1">
                   Descarga tus certificados
                 </p>
               </div>

@@ -108,10 +108,10 @@ export default function ManageEventsPage() {
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 lg:mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gestión de Eventos</h1>
-          <p className="text-secondary mt-1">Administra todos los eventos del sistema</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Gestión de Eventos</h1>
+          <p className="text-secondary mt-1 text-sm sm:text-base">Administra todos los eventos del sistema</p>
         </div>
         <Link to="/admin/events/new">
           <Button>
@@ -125,8 +125,8 @@ export default function ManageEventsPage() {
       <div className="mb-6">
         <Card>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="md:col-span-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="sm:col-span-2">
                 <Input
                   placeholder="Buscar por título..."
                   value={searchTerm}
@@ -172,80 +172,84 @@ export default function ManageEventsPage() {
       {/* Table */}
       <Card>
         <CardContent padding="none">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Título</TableHead>
-                <TableHead>Fecha</TableHead>
-                <TableHead>Modalidad</TableHead>
-                <TableHead>Cupos</TableHead>
-                <TableHead>Duración</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {events.length === 0 ? (
-                <TableEmpty colSpan={7} message="No hay eventos registrados" />
-              ) : (
-                events.map((event) => (
-                  <TableRow key={event.id}>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium text-gray-900">{event.title}</p>
-                        {event.location && (
-                          <p className="text-sm text-secondary">{event.location}</p>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {format(new Date(event.date), "dd 'de' MMMM, yyyy", { locale: es })}
-                      <p className="text-sm text-secondary">
-                        {format(new Date(event.date), 'HH:mm')}
-                      </p>
-                    </TableCell>
-                    <TableCell>{getModalityBadge(event.modality)}</TableCell>
-                    <TableCell>
-                      <span className={event.available_slots === 0 ? 'text-error font-medium' : ''}>
-                        {event.available_slots} / {event.capacity}
-                      </span>
-                    </TableCell>
-                    <TableCell>{event.duration} min</TableCell>
-                    <TableCell>{getStatusBadge(event.status)}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end space-x-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => navigate(`/admin/events/${event.id}/attendance`)}
-                        >
-                          <CheckCircle className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => navigate(`/admin/events/${event.id}`)}
-                        >
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                        {event.status === 'active' && (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => navigate(`/admin/events/${event.id}/edit`)}
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+          <div className="overflow-x-auto rounded-xl">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Título</TableHead>
+                  <TableHead className="hidden md:table-cell">Fecha</TableHead>
+                  <TableHead className="hidden lg:table-cell">Modalidad</TableHead>
+                  <TableHead>Cupos</TableHead>
+                  <TableHead className="hidden lg:table-cell">Duración</TableHead>
+                  <TableHead className="hidden sm:table-cell">Estado</TableHead>
+                  <TableHead className="text-right">Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {events.length === 0 ? (
+                  <TableEmpty colSpan={7} message="No hay eventos registrados" />
+                ) : (
+                  events.map((event) => (
+                    <TableRow key={event.id}>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium text-gray-900">{event.title}</p>
+                          {event.location && (
+                            <p className="text-xs sm:text-sm text-secondary hidden md:block">{event.location}</p>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        {format(new Date(event.date), "dd 'de' MMMM, yyyy", { locale: es })}
+                        <p className="text-xs sm:text-sm text-secondary">
+                          {format(new Date(event.date), 'HH:mm')}
+                        </p>
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell">{getModalityBadge(event.modality)}</TableCell>
+                      <TableCell>
+                        <span className={event.available_slots === 0 ? 'text-error font-medium' : ''}>
+                          {event.available_slots} / {event.capacity}
+                        </span>
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell">{event.duration} min</TableCell>
+                      <TableCell className="hidden sm:table-cell">{getStatusBadge(event.status)}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end space-x-1 sm:space-x-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => navigate(`/admin/events/${event.id}/attendance`)}
+                            className="hidden xs:inline-flex"
+                          >
+                            <CheckCircle className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => navigate(`/admin/events/${event.id}`)}
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          {event.status === 'active' && (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => navigate(`/admin/events/${event.id}/edit`)}
+                                className="hidden sm:inline-flex"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 

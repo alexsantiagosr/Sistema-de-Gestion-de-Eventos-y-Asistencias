@@ -47,9 +47,9 @@ export default function CertificatesPage() {
   return (
     <div>
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Mis Certificados</h1>
-        <p className="text-secondary mt-1">
+      <div className="mb-6 lg:mb-8">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Mis Certificados</h1>
+        <p className="text-secondary mt-1 text-sm sm:text-base">
           Descarga tus certificados de asistencia a eventos
         </p>
       </div>
@@ -63,23 +63,23 @@ export default function CertificatesPage() {
               <h3 className="text-lg font-medium text-gray-900 mb-2">
                 No tienes certificados disponibles
               </h3>
-              <p className="text-secondary">
+              <p className="text-secondary text-sm sm:text-base">
                 Completa eventos con el porcentaje de asistencia requerido para obtener certificados
               </p>
             </div>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6">
           {certificates.map((cert) => (
             <Card key={cert.enrollmentId}>
-              <CardContent>
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex items-start justify-between mb-3 sm:mb-4">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 truncate">
                       {cert.eventTitle}
                     </h3>
-                    <p className="text-sm text-secondary">
+                    <p className="text-xs sm:text-sm text-secondary">
                       {new Date(cert.eventDate).toLocaleDateString('es-ES', {
                         day: 'numeric',
                         month: 'long',
@@ -88,12 +88,12 @@ export default function CertificatesPage() {
                     </p>
                   </div>
                   {cert.eligible ? (
-                    <Badge variant="success">
+                    <Badge variant="success" className="flex-shrink-0 ml-2">
                       <CheckCircle className="w-3 h-3 mr-1" />
                       Elegible
                     </Badge>
                   ) : (
-                    <Badge variant="error">
+                    <Badge variant="error" className="flex-shrink-0 ml-2">
                       <XCircle className="w-3 h-3 mr-1" />
                       No elegible
                     </Badge>
@@ -101,13 +101,13 @@ export default function CertificatesPage() {
                 </div>
 
                 {/* Attendance Progress */}
-                <div className="mb-4">
-                  <div className="flex items-center justify-between text-sm mb-2">
+                <div className="mb-3 sm:mb-4">
+                  <div className="flex items-center justify-between text-xs sm:text-sm mb-2">
                     <span className="text-secondary">Asistencia</span>
                     <span
                       className={`font-medium ${cert.attendancePercentage >= cert.minRequired
-                          ? 'text-success'
-                          : 'text-error'
+                        ? 'text-success'
+                        : 'text-error'
                         }`}
                     >
                       {cert.attendancePercentage}% / {cert.minRequired}% requerida
@@ -116,8 +116,8 @@ export default function CertificatesPage() {
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
                       className={`h-2 rounded-full transition-all ${cert.attendancePercentage >= cert.minRequired
-                          ? 'bg-success'
-                          : 'bg-error'
+                        ? 'bg-success'
+                        : 'bg-error'
                         }`}
                       style={{ width: `${Math.min(100, cert.attendancePercentage)}%` }}
                     />

@@ -112,9 +112,9 @@ export default function MyEnrollmentsPage() {
   return (
     <div>
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Mis Inscripciones</h1>
-        <p className="text-secondary mt-1">Gestiona tus inscripciones a eventos</p>
+      <div className="mb-6 lg:mb-8">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Mis Inscripciones</h1>
+        <p className="text-secondary mt-1 text-sm sm:text-base">Gestiona tus inscripciones a eventos</p>
       </div>
 
       {/* Enrollments List */}
@@ -139,19 +139,19 @@ export default function MyEnrollmentsPage() {
         <div className="grid grid-cols-1 gap-4">
           {enrollments.map((enrollment) => (
             <Card key={enrollment.id}>
-              <CardContent>
-                <div className="flex items-start justify-between">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                   {/* Event Info */}
                   <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-3">
-                      <h3 className="text-lg font-semibold text-gray-900">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3">
+                      <h3 className="text-base sm:text-lg font-semibold text-gray-900">
                         {enrollment.events?.title}
                       </h3>
                       {getStatusBadge(enrollment.status)}
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                      <div className="flex items-center text-sm text-secondary">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4">
+                      <div className="flex items-center text-xs sm:text-sm text-secondary">
                         <Calendar className="w-4 h-4 mr-2" />
                         {format(
                           new Date(enrollment.events?.date || ''),
@@ -159,12 +159,12 @@ export default function MyEnrollmentsPage() {
                           { locale: es }
                         )}
                       </div>
-                      <div className="flex items-center text-sm text-secondary">
+                      <div className="flex items-center text-xs sm:text-sm text-secondary">
                         <Clock className="w-4 h-4 mr-2" />
                         {enrollment.events?.duration} minutos
                       </div>
                       {enrollment.events?.location && (
-                        <div className="flex items-center text-sm text-secondary">
+                        <div className="flex items-center text-xs sm:text-sm text-secondary">
                           <MapPin className="w-4 h-4 mr-2" />
                           <span className="line-clamp-1">{enrollment.events.location}</span>
                         </div>
@@ -174,15 +174,15 @@ export default function MyEnrollmentsPage() {
                     {/* Attendance Info */}
                     {(enrollment.check_in || enrollment.check_out) && (
                       <div className="p-3 bg-gray-50 rounded-lg mb-4">
-                        <div className="flex items-center space-x-4 text-sm">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm">
                           {enrollment.check_in && (
-                            <span className="text-success">
+                            <span className="text-success flex items-center">
                               <CheckCircle className="w-4 h-4 inline mr-1" />
                               Check-in: {format(new Date(enrollment.check_in), 'HH:mm')}
                             </span>
                           )}
                           {enrollment.check_out && (
-                            <span className="text-success">
+                            <span className="text-success flex items-center">
                               <CheckCircle className="w-4 h-4 inline mr-1" />
                               Check-out: {format(new Date(enrollment.check_out), 'HH:mm')}
                             </span>
@@ -193,13 +193,14 @@ export default function MyEnrollmentsPage() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex flex-col space-y-2 ml-4">
+                  <div className="flex flex-wrap sm:flex-col gap-2 ml-0 sm:ml-4">
                     {enrollment.status === 'active' && (
                       <>
                         <Button
                           variant="secondary"
                           size="sm"
                           onClick={() => handleViewQR(enrollment.id)}
+                          className="flex-1 sm:flex-none"
                         >
                           <QrCode className="w-4 h-4 mr-2" />
                           Ver QR
@@ -208,6 +209,7 @@ export default function MyEnrollmentsPage() {
                           variant="secondary"
                           size="sm"
                           onClick={() => { }}
+                          className="flex-1 sm:flex-none"
                         >
                           <Download className="w-4 h-4 mr-2" />
                           Descargar
@@ -221,6 +223,7 @@ export default function MyEnrollmentsPage() {
                               title: enrollment.events?.title || '',
                             })
                           }
+                          className="flex-1 sm:flex-none"
                         >
                           <XCircle className="w-4 h-4 mr-2" />
                           Cancelar
@@ -233,6 +236,7 @@ export default function MyEnrollmentsPage() {
                         size="sm"
                         onClick={() => handleDownloadCertificate(enrollment.event_id)}
                         isLoading={downloadCertMutation.isPending}
+                        className="w-full sm:w-auto"
                       >
                         <FileText className="w-4 h-4 mr-2" />
                         Descargar Certificado

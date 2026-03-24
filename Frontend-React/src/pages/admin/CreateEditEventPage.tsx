@@ -117,16 +117,16 @@ export default function CreateEditEventPage() {
   return (
     <div className="max-w-3xl">
       {/* Header */}
-      <div className="flex items-center space-x-4 mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 gap-3 sm:gap-0 mb-6 lg:mb-8">
         <Button variant="ghost" size="sm" onClick={() => navigate('/admin/events')}>
           <ArrowLeft className="w-5 h-5 mr-2" />
           Volver
         </Button>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+        <div className="flex-1">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
             {isEdit ? 'Editar Evento' : 'Crear Nuevo Evento'}
           </h1>
-          <p className="text-secondary mt-1">
+          <p className="text-secondary mt-1 text-sm sm:text-base">
             {isEdit ? 'Modifica la información del evento' : 'Completa el formulario para crear un evento'}
           </p>
         </div>
@@ -134,12 +134,12 @@ export default function CreateEditEventPage() {
 
       {/* Form */}
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Card className="mb-6">
+        <Card className="mb-4 lg:mb-6">
           <CardHeader>
             <CardTitle>Información Básica</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-5">
+            <div className="space-y-4 sm:space-y-5">
               <Input
                 label="Título del evento"
                 placeholder="Ej: Taller de Node.js Avanzado"
@@ -162,7 +162,7 @@ export default function CreateEditEventPage() {
                 )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                 <Input
                   label="Fecha y hora"
                   type="datetime-local"
@@ -199,12 +199,12 @@ export default function CreateEditEventPage() {
           </CardContent>
         </Card>
 
-        <Card className="mb-6">
+        <Card className="mb-4 lg:mb-6">
           <CardHeader>
             <CardTitle>Configuración del Evento</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
               <Input
                 label="Capacidad máxima"
                 type="number"
@@ -232,8 +232,8 @@ export default function CreateEditEventPage() {
               />
             </div>
 
-            <div className="mt-4 p-4 bg-blue-50 rounded-xl">
-              <p className="text-sm text-gray-700">
+            <div className="mt-4 p-3 sm:p-4 bg-blue-50 rounded-xl">
+              <p className="text-xs sm:text-sm text-gray-700">
                 <strong>Nota:</strong> El porcentaje mínimo de asistencia se usa para determinar
                 si los participantes son elegibles para recibir certificado.
                 Ej: Si estableces 80%, los asistentes deben permanecer al menos el 80% del evento.
@@ -243,17 +243,19 @@ export default function CreateEditEventPage() {
         </Card>
 
         {/* Actions */}
-        <div className="flex items-center justify-end space-x-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 sm:gap-4">
           <Button
             type="button"
             variant="secondary"
             onClick={() => navigate('/admin/events')}
+            className="w-full sm:w-auto"
           >
             Cancelar
           </Button>
           <Button
             type="submit"
             isLoading={createMutation.isPending || updateMutation.isPending}
+            className="w-full sm:w-auto"
           >
             {isEdit ? 'Actualizar Evento' : 'Crear Evento'}
           </Button>
