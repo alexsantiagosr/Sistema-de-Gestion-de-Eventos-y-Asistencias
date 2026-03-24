@@ -15,25 +15,25 @@ const PORT = process.env.PORT || 5000;
 // Middlewares
 // CORS restringido - usar cuando esté estable en producción
 
-// app.use(cors({
-//   origin: [
-//     'http://localhost:3000',
-//     'http://localhost:5173',
-//     'http://localhost:5174',
-//     'https://sistema-de-gestion-de-eventos-y-asistencias-dhlo-cv1gnyodb.vercel.app',
-//     'https://sistema-de-gestion-de-eventos-y-asi-nu.vercel.app'
-//   ],
-//   credentials: true,
-//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-//   allowedHeaders: ['Content-Type', 'Authorization']
-// }));
-
-// CORS abierto - temporal para producción
 app.use(cors({
-  origin: '*',
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'https://sistema-de-gestion-de-eventos-y-asistencias-dhlo-cv1gnyodb.vercel.app',
+    'https://sistema-de-gestion-de-eventos-y-asi-nu.vercel.app'
+  ],
+  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// CORS abierto - temporal para producción
+//app.use(cors({
+//  origin: '*',
+//  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+//  allowedHeaders: ['Content-Type', 'Authorization']
+//}));
 
 
 
