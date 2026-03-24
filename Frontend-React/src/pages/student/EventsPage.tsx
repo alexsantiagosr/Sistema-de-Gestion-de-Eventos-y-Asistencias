@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useAvailableEvents } from '@/hooks/useEvents';
 import { useEnroll } from '@/hooks/useEnrollments';
+import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
@@ -12,6 +13,9 @@ import { Card, CardContent } from '@/components/ui/Card';
 import Spinner from '@/components/ui/Spinner';
 
 export default function EventsPage() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
+
   const [searchTerm, setSearchTerm] = useState('');
   const [modalityFilter, setModalityFilter] = useState<string>('');
   const [enrollingId, setEnrollingId] = useState<string | null>(null);
@@ -189,22 +193,28 @@ export default function EventsPage() {
                       Ver detalle
                     </Button>
                   </Link>
-                  <Button
-                    className="w-full"
-                    disabled={event.available_slots === 0 || enrollingId === event.id}
-                    onClick={() => handleEnroll(event.id, event.title)}
-                  >
-                    {enrollingId === event.id ? (
-                      <>
-                        <Spinner className="w-4 h-4 mr-2" />
-                        Inscribiendo...
-                      </>
-                    ) : event.available_slots === 0 ? (
-                      'Sin cupos'
-                    ) : (
-                      'Inscribirse'
-                    )}
-                  </Button>
+                  {!isAdmin ? (
+                    <Button
+                      className="w-full"
+                      disabled={event.available_slots === 0 || enrollingId === event.id}
+                      onClick={() => handleEnroll(event.id, event.title)}
+                    >
+                      {enrollingId === event.id ? (
+                        <>
+                          <Spinner className="w-4 h-4 mr-2" />
+                          Inscribiendo...
+                        </>
+                      ) : event.available_slots === 0 ? (
+                        'Sin cupos'
+                      ) : (
+                        'Inscribirse'
+                      )}
+                    </Button>
+                  ) : (
+                    <span className="text-sm text-gray-400 italic px-3 py-2 block text-center">
+                      Solo lectura
+                    </span>
+                  )}
                 </div>
               </CardContent>
             </Card>

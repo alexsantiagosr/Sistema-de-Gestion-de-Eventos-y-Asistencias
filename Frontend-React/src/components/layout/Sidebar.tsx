@@ -9,6 +9,7 @@ import {
   X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/context/AuthContext';
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -28,7 +29,8 @@ const adminLinks = [
 ];
 
 export default function Sidebar({ setSidebarOpen }: SidebarProps) {
-  const isAdmin = window.location.pathname.startsWith('/admin');
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const links = isAdmin ? adminLinks : studentLinks;
 
   return (
