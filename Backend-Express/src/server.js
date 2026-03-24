@@ -18,7 +18,8 @@ app.use(cors({
     'http://localhost:3000',
     'http://localhost:5173',
     'http://localhost:5174',
-    'https://tu-proyecto.vercel.app'
+    'https://sistema-de-gestion-de-eventos-y-asistencias-dhlo-cv1gnyodb.vercel.app',
+    'https://sistema-de-gestion-de-eventos-y-asi-nu.vercel.app'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
