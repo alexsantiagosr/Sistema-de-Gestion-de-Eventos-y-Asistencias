@@ -43,3 +43,4 @@ Thumbs.db
 # Misc
 .eslintcache
 .parcel-cache/
+.vite/

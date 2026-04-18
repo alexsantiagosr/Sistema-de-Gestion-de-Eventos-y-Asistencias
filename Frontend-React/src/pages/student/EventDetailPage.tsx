@@ -1,5 +1,5 @@
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Calendar, MapPin, Clock, Users, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Clock, Users, CheckCircle, XCircle, Building2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useEvent } from '@/hooks/useEvents';
@@ -20,10 +20,12 @@ export default function EventDetailPage() {
 
   const event = eventData?.event;
 
-  // Verificar si ya está inscrito
-  const isEnrolled = myEnrollments?.enrollments.some(
+  // Verificar estado de inscripción
+  const currentEnrollment = myEnrollments?.enrollments.find(
     (e) => e.event_id === id
   );
+  const isEnrolled = currentEnrollment?.status === 'active';
+  const isCancelled = currentEnrollment?.status === 'cancelled';
 
   if (isLoading) {
     return (
@@ -156,20 +158,30 @@ export default function EventDetailPage() {
           </div>
 
           {/* Organizer */}
-          {event.created_by && (
-            <div className="mb-8 p-4 bg-gray-50 rounded-xl">
-              <h3 className="text-sm font-medium text-gray-700 mb-1">Organizado por</h3>
-              <p className="text-gray-900">{event.created_by.name}</p>
+          {(event.organized_by || event.created_by) && (
+            <div className="mb-8 p-4 bg-gray-50 rounded-xl flex items-start gap-3">
+              <Building2 className="w-5 h-5 text-primary mt-0.5" />
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 mb-1">Organizado por</h3>
+                <p className="text-gray-900">
+                  {event.organized_by || event.created_by?.name || 'No especificado'}
+                </p>
+              </div>
             </div>
           )}
 
           {/* Actions */}
-          <div className="flex items-center justify-between pt-6 border-t border-gray-100">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-6 border-t border-gray-100">
             <div>
               {isEnrolled ? (
                 <div className="flex items-center text-success">
                   <CheckCircle className="w-5 h-5 mr-2" />
                   <span className="font-medium">Ya estás inscrito en este evento</span>
+                </div>
+              ) : isCancelled ? (
+                <div className="flex items-center text-error">
+                  <XCircle className="w-5 h-5 mr-2" />
+                  <span className="font-medium">Inscripción cancelada</span>
                 </div>
               ) : (
                 <p className="text-secondary">
@@ -180,16 +192,23 @@ export default function EventDetailPage() {
               )}
             </div>
             <div className="flex items-center space-x-4">
-              {!isEnrolled && (
-                <Link to={`/events/${event.id}/enroll`}>
-                  <Button
-                    disabled={event.available_slots === 0 || enrollMutation.isPending}
-                    onClick={handleEnroll}
-                    isLoading={enrollMutation.isPending}
-                  >
-                    {event.available_slots === 0 ? 'Sin cupos' : 'Inscribirme al evento'}
-                  </Button>
-                </Link>
+              {!isEnrolled && !isCancelled && (
+                <Button
+                  disabled={event.available_slots === 0 || enrollMutation.isPending}
+                  onClick={handleEnroll}
+                  isLoading={enrollMutation.isPending}
+                >
+                  {event.available_slots === 0 ? 'Sin cupos' : 'Inscribirme al evento'}
+                </Button>
+              )}
+              {isCancelled && (
+                <Button
+                  disabled={event.available_slots === 0 || enrollMutation.isPending}
+                  onClick={handleEnroll}
+                  isLoading={enrollMutation.isPending}
+                >
+                  {event.available_slots === 0 ? 'Sin cupos' : 'Reinscribirme'}
+                </Button>
               )}
               {isEnrolled && (
                 <Link to="/my-enrollments">

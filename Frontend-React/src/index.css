@@ -6,6 +6,16 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
   }
+
+  /* Ocultar outline en clic (mouse) pero mantener en navegación por teclado */
+  button:focus:not(:focus-visible),
+  [role="button"]:focus:not(:focus-visible),
+  a:focus:not(:focus-visible),
+  select:focus:not(:focus-visible),
+  div[tabindex]:focus:not(:focus-visible) {
+    outline: none !important;
+    box-shadow: none !important;
+  }
 }
 
 @layer components {
@@ -36,6 +46,21 @@
            disabled:opacity-50 disabled:cursor-not-allowed
            transition-all duration-200;
   }
+
+  .select-styled {
+    @apply w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl
+           text-foreground cursor-pointer
+           focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent
+           disabled:opacity-50 disabled:cursor-not-allowed
+           hover:border-gray-300
+           transition-all duration-200;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 16px 16px;
+    padding-right: 2.5rem;
+  }
   
   .card-base {
     @apply bg-white rounded-2xl shadow-md border border-gray-100 
@@ -46,3 +71,4 @@
     @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
   }
 }
+

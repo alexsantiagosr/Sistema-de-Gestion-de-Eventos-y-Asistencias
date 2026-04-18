@@ -76,8 +76,8 @@ export default function EventsPage() {
       {/* Filters */}
       <Card className="mb-4 lg:mb-6">
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="sm:col-span-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 sm:gap-4">
+            <div className="flex-1 sm:flex-[2]">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
@@ -89,14 +89,14 @@ export default function EventsPage() {
                 />
               </div>
             </div>
-            <div>
+            <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Modalidad
               </label>
               <select
                 value={modalityFilter}
                 onChange={(e) => setModalityFilter(e.target.value)}
-                className="input-base"
+                className="select-styled"
               >
                 <option value="">Todas las modalidades</option>
                 <option value="presencial">Presencial</option>

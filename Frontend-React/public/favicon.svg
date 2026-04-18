@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e3a5f"/>
+      <stop offset="100%" style="stop-color:#102a43"/>
+    </linearGradient>
+  </defs>
+  <!-- Background circle -->
+  <circle cx="40" cy="40" r="38" fill="url(#bg)"/>
+  <!-- Auditorium arc -->
+  <path d="M15 55 A25 25 0 0 1 65 55" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+  <!-- Stage -->
+  <rect x="22" y="58" width="36" height="6" fill="rgba(255,255,255,0.15)" rx="1"/>
+  <!-- Seats Row 1 -->
+  <circle cx="32" cy="48" r="2.5" fill="rgba(255,255,255,0.7)"/>
+  <circle cx="40" cy="46" r="2.5" fill="rgba(255,255,255,0.7)"/>
+  <circle cx="48" cy="48" r="2.5" fill="rgba(255,255,255,0.7)"/>
+  <!-- Seats Row 2 -->
+  <circle cx="28" cy="39" r="2.5" fill="rgba(255,255,255,0.3)"/>
+  <circle cx="36" cy="37" r="2.5" fill="rgba(255,255,255,0.7)"/>
+  <circle cx="44" cy="37" r="2.5" fill="rgba(255,255,255,0.7)"/>
+  <circle cx="52" cy="39" r="2.5" fill="rgba(255,255,255,0.3)"/>
+  <!-- Seats Row 3 -->
+  <circle cx="24" cy="30" r="2.5" fill="rgba(255,255,255,0.2)"/>
+  <circle cx="32" cy="28" r="2.5" fill="rgba(255,255,255,0.3)"/>
+  <circle cx="40" cy="27" r="2.5" fill="rgba(255,255,255,0.7)"/>
+  <circle cx="48" cy="28" r="2.5" fill="rgba(255,255,255,0.3)"/>
+  <circle cx="56" cy="30" r="2.5" fill="rgba(255,255,255,0.2)"/>
+  <!-- Podium -->
+  <rect x="38" y="52" width="4" height="6" fill="rgba(255,255,255,0.5)" rx="1"/>
+  <!-- Light rays -->
+  <line x1="28" y1="18" x2="40" y2="48" stroke="#fbbf24" stroke-width="1" opacity="0.4"/>
+  <line x1="40" y1="14" x2="40" y2="48" stroke="#fbbf24" stroke-width="1" opacity="0.4"/>
+  <line x1="52" y1="18" x2="40" y2="48" stroke="#fbbf24" stroke-width="1" opacity="0.4"/>
+</svg>

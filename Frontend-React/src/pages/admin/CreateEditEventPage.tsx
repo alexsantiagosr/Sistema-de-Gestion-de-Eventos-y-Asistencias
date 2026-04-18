@@ -23,6 +23,7 @@ const eventSchema = z.object({
   duration: z.coerce.number().min(1, 'La duración debe ser mayor a 0'),
   min_attendance_percentage: z.coerce.number().min(1).max(100, 'Debe estar entre 1 y 100'),
   location: z.string().optional(),
+  organized_by: z.string().optional(),
 }).refine(
   (data) => {
     if (data.modality === 'presencial' && !data.location) {
@@ -57,6 +58,7 @@ export default function CreateEditEventPage() {
     defaultValues: {
       description: '',
       location: '',
+      organized_by: '',
     },
   });
 
@@ -73,6 +75,7 @@ export default function CreateEditEventPage() {
         duration: event.duration,
         min_attendance_percentage: event.min_attendance_percentage,
         location: event.location || '',
+        organized_by: event.organized_by || '',
       });
     }
   }, [eventData, isEdit, reset]);
@@ -83,6 +86,7 @@ export default function CreateEditEventPage() {
         ...data,
         description: data.description || '',
         location: data.location || '',
+        organized_by: data.organized_by || '',
       };
 
       if (isEdit) {
@@ -175,7 +179,7 @@ export default function CreateEditEventPage() {
                     Modalidad
                   </label>
                   <select
-                    className="input-base"
+                    className="select-styled"
                     {...register('modality')}
                   >
                     <option value="">Seleccionar modalidad</option>
@@ -194,6 +198,13 @@ export default function CreateEditEventPage() {
                 placeholder="Ej: Auditorio Principal, Calle 123 #45-67"
                 error={errors.location?.message}
                 {...register('location')}
+              />
+
+              <Input
+                label="Organizado por"
+                placeholder="Ej: Facultad de Ingeniería, Bienestar Universitario"
+                error={errors.organized_by?.message}
+                {...register('organized_by')}
               />
             </div>
           </CardContent>

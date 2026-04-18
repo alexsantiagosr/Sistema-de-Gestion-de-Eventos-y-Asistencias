@@ -26,6 +26,7 @@ export interface Event {
   duration: number;
   min_attendance_percentage: number;
   location: string | null;
+  organized_by: string | null;
   status: EventStatus;
   created_by: {
     id: string;
@@ -133,6 +134,7 @@ export interface CreateEventFormData {
   duration: number;
   min_attendance_percentage: number;
   location: string;
+  organized_by: string;
 }
 
 export interface UpdateEventFormData extends Partial<CreateEventFormData> {

@@ -31,6 +31,14 @@ const AuthController = {
         });
       }
 
+      // Validar dominio institucional
+      if (!email.endsWith('@unimayor.edu.co')) {
+        return res.status(400).json({
+          error: 'Dominio no permitido',
+          message: 'Solo se permiten correos institucionales @unimayor.edu.co'
+        });
+      }
+
       // Validar longitud de contraseña
       if (password.length < 6) {
         return res.status(400).json({

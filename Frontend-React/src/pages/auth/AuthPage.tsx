@@ -11,13 +11,23 @@ import { toast } from 'sonner';
 
 // Esquemas de validación
 const loginSchema = z.object({
-  email: z.string().email('Email inválido'),
+  email: z.string()
+    .email('Email inválido')
+    .refine(
+      (val) => val.endsWith('@unimayor.edu.co'),
+      'Solo se permiten correos institucionales @unimayor.edu.co'
+    ),
   password: z.string().min(1, 'La contraseña es requerida'),
 });
 
 const registerSchema = z.object({
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
-  email: z.string().email('Email inválido'),
+  email: z.string()
+    .email('Email inválido')
+    .refine(
+      (val) => val.endsWith('@unimayor.edu.co'),
+      'Solo se permiten correos institucionales @unimayor.edu.co'
+    ),
   password: z.string()
     .min(8, 'La contraseña debe tener al menos 8 caracteres')
     .regex(/[A-Z]/, 'La contraseña debe tener al menos una mayúscula')
@@ -247,7 +257,7 @@ export default function AuthPage() {
                 <Input
                   label="Email"
                   type="email"
-                  placeholder="tu@email.com"
+                  placeholder="usuario@unimayor.edu.co"
                   error={loginErrors.email?.message}
                   icon={<Mail className="h-5 w-5 text-gray-400" />}
                   {...registerLogin('email')}
@@ -336,7 +346,7 @@ export default function AuthPage() {
                 <Input
                   label="Email"
                   type="email"
-                  placeholder="tu@email.com"
+                  placeholder="usuario@unimayor.edu.co"
                   error={registerErrors.email?.message}
                   icon={<Mail className="h-5 w-5 text-gray-400" />}
                   {...registerRegister('email')}

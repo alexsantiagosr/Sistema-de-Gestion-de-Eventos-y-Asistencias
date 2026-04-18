@@ -89,6 +89,7 @@ const EventModel = {
     duration,
     min_attendance_percentage,
     location,
+    organized_by,
     created_by
   }) {
     const { data, error } = await supabaseAdmin
@@ -102,6 +103,7 @@ const EventModel = {
         duration,
         min_attendance_percentage,
         location,
+        organized_by,
         created_by
       }])
       .select(`

@@ -125,8 +125,8 @@ export default function ManageEventsPage() {
       <div className="mb-6">
         <Card>
           <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="sm:col-span-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 sm:gap-4">
+              <div className="flex-1 sm:flex-[2]">
                 <Input
                   placeholder="Buscar por título..."
                   value={searchTerm}
@@ -134,14 +134,14 @@ export default function ManageEventsPage() {
                   icon={<Search className="w-5 h-5" />}
                 />
               </div>
-              <div>
+              <div className="flex-1">
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
                   Estado
                 </label>
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="input-base"
+                  className="select-styled"
                 >
                   <option value="">Todos los estados</option>
                   <option value="active">Activos</option>
@@ -149,14 +149,14 @@ export default function ManageEventsPage() {
                   <option value="cancelled">Cancelados</option>
                 </select>
               </div>
-              <div>
+              <div className="flex-1">
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
                   Modalidad
                 </label>
                 <select
                   value={modalityFilter}
                   onChange={(e) => setModalityFilter(e.target.value)}
-                  className="input-base"
+                  className="select-styled"
                 >
                   <option value="">Todas las modalidades</option>
                   <option value="presencial">Presencial</option>
