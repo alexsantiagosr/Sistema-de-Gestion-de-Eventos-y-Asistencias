@@ -41,8 +41,9 @@ router.post('/:id/check-in',
 );
 
 // Check-out: estudiante (id = eventId) o admin (id = enrollmentId)
+// Usa authenticateWithQueryToken para soportar navigator.sendBeacon (sin headers)
 router.post('/:id/check-out',
-  authMiddleware.authenticate,
+  authMiddleware.authenticateWithQueryToken,
   EnrollmentController.checkOutDispatcher
 );
 

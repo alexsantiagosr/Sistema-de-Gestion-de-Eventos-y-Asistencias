@@ -72,6 +72,53 @@ const authMiddleware = {
 
       next();
     };
+  },
+
+  /**
+   * Middleware para autenticación con fallback a query param
+   * Verifica token en header Authorization primero
+   * Si no existe, busca token en query param ?token=..
+   * Útil para navegador.sendBeacon() que no puede enviar headers
+   */
+  async authenticateWithQueryToken(req, res, next) {
+    try {
+      let token = null;
+
+      // Intentar obtener token del header primero
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.split(' ')[1];
+      }
+
+      // Si no está en header, buscar en query param
+      if (!token && req.query.token) {
+        token = req.query.token;
+      }
+
+      if (!token) {
+        return res.status(401).json({
+          error: 'No autorizado',
+          message: 'Token de autenticación requerido'
+        });
+      }
+
+      // Verificar token
+      const decoded = AuthService.verifyToken(token);
+
+      // Adjuntar información del usuario al request
+      req.user = decoded;
+
+      next();
+    } catch (error) {
+      if (error.code === 'INVALID_TOKEN') {
+        return res.status(401).json({
+          error: 'No autorizado',
+          message: error.message
+        });
+      }
+
+      next(error);
+    }
   }
 };
 

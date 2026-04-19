@@ -123,17 +123,16 @@ export function useAutoCheckOut(eventId?: string, enabled: boolean = !!eventId) 
     const handleBeforeUnload = () => {
       // Usar navigator.sendBeacon para asegurar envío incluso si la página se cierra
       const apiUrl = import.meta.env.VITE_API_URL || 'https://sistema-de-gestion-de-eventos-y-x11t.onrender.com/api';
-      const url = `${apiUrl}/enrollments/${eventId}/check-out`;
       const token = localStorage.getItem('token');
       
       if (token) {
-        // Enviar con beacon si está disponible (mejor para cierre de ventana)
+        // sendBeacon no envía headers, distribuir token como query param
+        const url = `${apiUrl}/enrollments/${eventId}/check-out?token=${encodeURIComponent(token)}`;
+        
         if (navigator.sendBeacon) {
-          const headers = {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          };
-          const blob = new Blob(JSON.stringify({}), { type: 'application/json' });
+          // sendBeacon es más confiable para cierre de ventana
+          const data = JSON.stringify({});
+          const blob = new Blob([data], { type: 'application/json' });
           navigator.sendBeacon(url, blob);
         }
       }
