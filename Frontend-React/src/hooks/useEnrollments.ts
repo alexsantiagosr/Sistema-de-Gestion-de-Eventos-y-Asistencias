@@ -26,6 +26,7 @@ export function useEnroll() {
       queryClient.invalidateQueries({ queryKey: ['enrollments-my'] });
       queryClient.invalidateQueries({ queryKey: ['events'] });
       queryClient.invalidateQueries({ queryKey: ['events-available'] });
+      queryClient.invalidateQueries({ queryKey: ['virtual-access'] });
     },
   });
 }
@@ -38,6 +39,7 @@ export function useCancelEnrollment() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['enrollments-my'] });
       queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['virtual-access'] });
     },
   });
 }

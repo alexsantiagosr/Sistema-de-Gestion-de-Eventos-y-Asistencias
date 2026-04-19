@@ -47,6 +47,20 @@ export function useEvent(id: string) {
 }
 
 /**
+ * Acceso a sala virtual (estudiante). Solo consulta si enabled (inscrito + modalidad virtual/híbrido).
+ */
+export function useVirtualAccess(eventId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ['virtual-access', eventId],
+    queryFn: () => eventsApi.getVirtualAccess(eventId),
+    enabled: !!eventId && enabled,
+    staleTime: 30 * 1000,
+    refetchInterval: enabled ? 60 * 1000 : false,
+    retry: false,
+  });
+}
+
+/**
  * Hook para crear un evento
  */
 export function useCreateEvent() {

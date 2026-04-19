@@ -11,6 +11,7 @@ import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import Spinner from '@/components/ui/Spinner';
+import VirtualRoomAccessButton from '@/components/student/VirtualRoomAccessButton';
 
 export default function EventsPage() {
   const { user } = useAuth();
@@ -193,6 +194,11 @@ export default function EventsPage() {
                       Ver detalle
                     </Button>
                   </Link>
+                  {!isAdmin && (
+                    <div className="mb-2">
+                      <VirtualRoomAccessButton event={event} fullWidth />
+                    </div>
+                  )}
                   {!isAdmin ? (
                     <Button
                       className="w-full"

@@ -65,6 +65,7 @@ app.get('/', (req, res) => {
         list: 'GET /api/events',
         available: 'GET /api/events/available',
         detail: 'GET /api/events/:id',
+        virtualAccess: 'GET /api/events/:eventId/virtual-access (requiere estudiante)',
         create: 'POST /api/events (requiere admin)',
         update: 'PUT /api/events/:id (requiere admin)',
         delete: 'DELETE /api/events/:id (requiere admin)',

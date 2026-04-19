@@ -9,6 +9,7 @@ import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import Spinner from '@/components/ui/Spinner';
+import VirtualRoomAccessButton from '@/components/student/VirtualRoomAccessButton';
 
 export default function EventDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -191,7 +192,7 @@ export default function EventDetailPage() {
                 </p>
               )}
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:space-x-4 sm:gap-0">
               {!isEnrolled && !isCancelled && (
                 <Button
                   disabled={event.available_slots === 0 || enrollMutation.isPending}
@@ -215,6 +216,7 @@ export default function EventDetailPage() {
                   <Button>Ver mi inscripción</Button>
                 </Link>
               )}
+              <VirtualRoomAccessButton event={event} />
             </div>
           </div>
         </CardContent>

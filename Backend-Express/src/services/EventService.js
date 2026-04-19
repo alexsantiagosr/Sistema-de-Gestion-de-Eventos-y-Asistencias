@@ -1,10 +1,85 @@
 const EventModel = require('../models/EventModel');
+const EnrollmentModel = require('../models/EnrollmentModel');
 
 /**
  * Servicio de Eventos
  * Maneja la lógica de negocio para eventos
  */
 const EventService = {
+  /**
+   * Modalidad virtual o híbrida (acepta "híbrido" / "hibrido" en BD)
+   */
+  _isVirtualOrHybridModality(modality) {
+    if (!modality || typeof modality !== 'string') return false;
+    const m = modality.toLowerCase().replace(/í/g, 'i').trim();
+    return m === 'virtual' || m === 'hibrido';
+  },
+
+  /**
+   * Ventana [inicio, fin] según date + duration (minutos)
+   */
+  _isWithinEventTimeWindow(dateStr, durationMinutes) {
+    const start = new Date(dateStr);
+    const endMs = start.getTime() + Number(durationMinutes) * 60 * 1000;
+    const now = Date.now();
+    if (now < start.getTime()) {
+      return {
+        ok: false,
+        message: 'El acceso a la sala estará disponible al iniciar el evento'
+      };
+    }
+    if (now > endMs) {
+      return {
+        ok: false,
+        message: 'El evento ya finalizó; el acceso a la sala no está disponible'
+      };
+    }
+    return { ok: true };
+  },
+
+  /**
+   * Acceso a sala virtual para estudiante: inscripción activa, modalidad adecuada y horario del evento.
+   * @param {string} userId
+   * @param {string} eventId
+   * @returns {{ access: true }}
+   */
+  async checkStudentVirtualAccess(userId, eventId) {
+    const event = await EventModel.findById(eventId);
+    if (!event) {
+      const err = new Error('Evento no encontrado');
+      err.code = 'NOT_FOUND';
+      throw err;
+    }
+
+    if (!this._isVirtualOrHybridModality(event.modality)) {
+      const err = new Error('El acceso a la sala solo aplica a eventos virtuales o híbridos');
+      err.code = 'INVALID_MODALITY_FOR_VIRTUAL';
+      throw err;
+    }
+
+    const enrollment = await EnrollmentModel.findByUserAndEvent(userId, eventId);
+    if (!enrollment) {
+      const err = new Error('No estás inscrito en este evento');
+      err.code = 'NOT_ENROLLED';
+      throw err;
+    }
+
+    if (enrollment.status !== 'active') {
+      const err = new Error('Tu inscripción no está activa');
+      err.code = 'ENROLLMENT_NOT_ACTIVE';
+      throw err;
+    }
+
+    const windowCheck = this._isWithinEventTimeWindow(event.date, event.duration);
+    if (!windowCheck.ok) {
+      const err = new Error(windowCheck.message);
+      err.code = 'OUTSIDE_EVENT_WINDOW';
+      throw err;
+    }
+
+    return { access: true };
+  },
+
   /**
    * Obtener todos los eventos con filtros
    */

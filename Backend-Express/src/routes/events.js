@@ -11,6 +11,15 @@ const authMiddleware = require('../middlewares/auth');
 // Rutas públicas (lectura)
 router.get('/', EventController.index);
 router.get('/available', EventController.available);
+
+// Estudiante: acceso a sala virtual (antes de /:id para evitar ambigüedad)
+router.get(
+  '/:eventId/virtual-access',
+  authMiddleware.authenticate,
+  authMiddleware.requireRole('student'),
+  EventController.virtualAccess
+);
+
 router.get('/:id', EventController.show);
 
 // Rutas protegidas (solo admin)

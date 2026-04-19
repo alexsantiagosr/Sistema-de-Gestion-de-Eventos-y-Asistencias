@@ -25,6 +25,20 @@ export const eventsApi = {
     return response.data;
   },
 
+  /** GET /events/:eventId/virtual-access — solo estudiante; 403/404 → access: false */
+  getVirtualAccess: async (eventId: string) => {
+    try {
+      const response = await axiosInstance.get<{ access: boolean }>(`/events/${eventId}/virtual-access`);
+      return response.data;
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } })?.response?.status;
+      if (status === 403 || status === 404) {
+        return { access: false as const };
+      }
+      throw err;
+    }
+  },
+
   // Crear evento (admin)
   create: async (data: CreateEventFormData) => {
     const response = await axiosInstance.post<{ event: Event; message: string }>('/events', data);

@@ -67,6 +67,42 @@ const EventController = {
   },
 
   /**
+   * GET /api/events/:eventId/virtual-access
+   * Estudiante inscrito: valida acceso a sala virtual en ventana del evento
+   */
+  async virtualAccess(req, res, next) {
+    try {
+      const { eventId } = req.params;
+      const userId = req.user.id;
+
+      await EventService.checkStudentVirtualAccess(userId, eventId);
+
+      res.json({ access: true });
+    } catch (error) {
+      if (error.code === 'NOT_FOUND') {
+        return res.status(404).json({
+          error: 'No encontrado',
+          message: error.message
+        });
+      }
+      if (
+        [
+          'NOT_ENROLLED',
+          'ENROLLMENT_NOT_ACTIVE',
+          'INVALID_MODALITY_FOR_VIRTUAL',
+          'OUTSIDE_EVENT_WINDOW'
+        ].includes(error.code)
+      ) {
+        return res.status(403).json({
+          error: 'Acceso denegado',
+          message: error.message
+        });
+      }
+      next(error);
+    }
+  },
+
+  /**
    * POST /api/events
    * Crear un nuevo evento (solo admin)
    */
