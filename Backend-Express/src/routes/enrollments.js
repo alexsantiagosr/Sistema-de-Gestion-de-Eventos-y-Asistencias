@@ -40,10 +40,10 @@ router.post('/:id/check-in',
   EnrollmentController.checkInDispatcher
 );
 
+// Check-out: estudiante (id = eventId) o admin (id = enrollmentId)
 router.post('/:id/check-out',
   authMiddleware.authenticate,
-  authMiddleware.requireRole('admin'),
-  EnrollmentController.checkOut
+  EnrollmentController.checkOutDispatcher
 );
 
 router.post('/:id/mark-used',

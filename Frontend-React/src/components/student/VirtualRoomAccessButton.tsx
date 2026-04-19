@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/context/AuthContext';
 import { useVirtualAccess } from '@/hooks/useEvents';
-import { useMyEnrollments } from '@/hooks/useEnrollments';
+import { useMyEnrollments, useAutoCheckOut } from '@/hooks/useEnrollments';
 import { enrollmentsApi } from '@/api/enrollments.api';
 import Button from '@/components/ui/Button';
 import type { Event } from '@/types';
@@ -27,7 +27,11 @@ export default function VirtualRoomAccessButton({ event, className, fullWidth }:
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [isCheckingIn, setIsCheckingIn] = useState(false);
+  const [hasEnteredRoom, setHasEnteredRoom] = useState(false);
   const { data: myEnrollments } = useMyEnrollments();
+
+  // Auto check-out cuando el usuario sale de la sala virtual
+  useAutoCheckOut(hasEnteredRoom ? event.id : undefined);
 
   const isStudent = user?.role === 'student';
   const isEnrolledActive = Boolean(
@@ -46,6 +50,7 @@ export default function VirtualRoomAccessButton({ event, className, fullWidth }:
     setIsCheckingIn(true);
     try {
       await enrollmentsApi.checkInVirtualRoom(event.id);
+      setHasEnteredRoom(true); // Activar auto check-out
       queryClient.invalidateQueries({ queryKey: ['enrollments-my'] });
     } catch (error: unknown) {
       const msg =

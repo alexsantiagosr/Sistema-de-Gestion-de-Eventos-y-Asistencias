@@ -50,6 +50,16 @@ export const enrollmentsApi = {
     return response.data;
   },
 
+  /** Check-out al salir de sala virtual (estudiante — eventId del evento) */
+  checkOutVirtualRoom: async (eventId: string) => {
+    const response = await axiosInstance.post<{
+      message: string;
+      enrollment: Enrollment;
+      alreadyCheckedOut?: boolean;
+    }>(`/enrollments/${eventId}/check-out`);
+    return response.data;
+  },
+
   // Registrar check-out (admin)
   checkOut: async (id: string) => {
     const response = await axiosInstance.post<{ enrollment: Enrollment }>(`/enrollments/${id}/check-out`);

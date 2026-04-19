@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { enrollmentsApi } from '@/api/enrollments.api';
 
 export function useMyEnrollments(status?: string) {
@@ -91,4 +92,65 @@ export function useAttendance(eventId: string) {
     queryFn: () => enrollmentsApi.getAttendance(eventId),
     enabled: !!eventId,
   });
+}
+
+/**
+ * Hook para registrar automáticamente check-out cuando el usuario sale de la sala virtual.
+ * Detecta:
+ * - beforeunload (cierre de pestaña, recarga de página)
+ * - useEffect cleanup (cambio de ruta)
+ * 
+ * Llamadas silenciosas sin mostrar errores al usuario.
+ * 
+ * @param eventId - ID del evento (para estudiantes en sala virtual)
+ * @param enabled - Habilitar autodetección (por defecto true si eventId está presente)
+ */
+export function useAutoCheckOut(eventId?: string, enabled: boolean = !!eventId) {
+  useEffect(() => {
+    if (!enabled || !eventId) return;
+
+    // Función para registrar check-out silenciosamente
+    const performCheckOut = async () => {
+      try {
+        await enrollmentsApi.checkOutVirtualRoom(eventId);
+      } catch (error) {
+        // Silenciosamente ignorar errores - no mostrar al usuario
+        console.debug('Auto check-out: no se necesitaba (ya registrado o error esperado)', error);
+      }
+    };
+
+    // Detectar beforeunload (cierre de pestaña, recarga, navegación)
+    const handleBeforeUnload = () => {
+      // Usar navigator.sendBeacon para asegurar envío incluso si la página se cierra
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://sistema-de-gestion-de-eventos-y-x11t.onrender.com/api';
+      const url = `${apiUrl}/enrollments/${eventId}/check-out`;
+      const token = localStorage.getItem('token');
+      
+      if (token) {
+        // Enviar con beacon si está disponible (mejor para cierre de ventana)
+        if (navigator.sendBeacon) {
+          const headers = {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          };
+          const blob = new Blob(JSON.stringify({}), { type: 'application/json' });
+          navigator.sendBeacon(url, blob);
+        }
+      }
+    };
+
+    // Detectar cambio de ruta (cleanup de useEffect)
+    const handleRouteChange = () => {
+      performCheckOut();
+    };
+
+    // Agregar listener para beforeunload
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    // Retornar cleanup para detectar cuando el componente se desmonta (cambio de ruta)
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      handleRouteChange();
+    };
+  }, [eventId, enabled]);
 }

@@ -278,6 +278,50 @@ const EnrollmentService = {
   },
 
   /**
+   * Check-out al salir de sala virtual (estudiante): solo si no tiene check_out registrado
+   * @param {string} userId - UUID del usuario
+   * @param {string} eventId - UUID del evento
+   */
+  async registerStudentVirtualCheckOut(userId, eventId) {
+    const enrollment = await EnrollmentModel.findByUserAndEvent(userId, eventId);
+
+    if (!enrollment) {
+      const error = new Error('No estás inscrito en este evento');
+      error.code = 'NOT_ENROLLED';
+      throw error;
+    }
+
+    if (enrollment.status !== 'active') {
+      const error = new Error('Tu inscripción no está activa');
+      error.code = 'ENROLLMENT_NOT_ACTIVE';
+      throw error;
+    }
+
+    if (!enrollment.check_in) {
+      const error = new Error('Debe registrar check-in antes del check-out');
+      error.code = 'NO_CHECKIN';
+      throw error;
+    }
+
+    // Si ya tiene check_out registrado, no sobrescribir
+    if (enrollment.check_out) {
+      return {
+        message: 'Check-out ya registrado',
+        enrollment,
+        alreadyCheckedOut: true
+      };
+    }
+
+    const updated = await EnrollmentModel.checkOut(enrollment.id);
+
+    return {
+      message: 'Check-out registrado exitosamente',
+      enrollment: updated,
+      alreadyCheckedOut: false
+    };
+  },
+
+  /**
    * Calcular porcentaje de asistencia de un usuario en un evento
    * @param {string} userId - UUID del usuario
    * @param {string} eventId - UUID del evento
