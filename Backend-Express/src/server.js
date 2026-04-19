@@ -13,27 +13,19 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middlewares
-// CORS restringido - usar cuando esté estable en producción
-
+// Configuración de CORS principal
 app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'http://localhost:5173',
-    'http://localhost:5174',
-    'https://sistema-de-gestion-de-eventos-y-asistencias-dhlo-cv1gnyodb.vercel.app',
-    'https://sistema-de-gestion-de-eventos-y-asi-nu.vercel.app'
-  ],
+  origin: "https://sistema-de-gestion-de-eventos-y-asi-one.vercel.app",
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// CORS abierto - temporal para producción
-//app.use(cors({
-//  origin: '*',
-//  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-//  allowedHeaders: ['Content-Type', 'Authorization']
-//}));
+// Manejo de peticiones preflight (OPTIONS) con la misma configuración
+app.options('*', cors({
+  origin: "https://sistema-de-gestion-de-eventos-y-asi-one.vercel.app",
+  credentials: true
+}));
 
 
 
