@@ -143,7 +143,41 @@ const EnrollmentController = {
 
   /**
    * POST /api/enrollments/:id/check-in
-   * Registrar check-in (admin)
+   * Admin: id = inscripción. Estudiante: id = eventId (sala virtual).
+   */
+  async checkInDispatcher(req, res, next) {
+    if (req.user.role === 'student') {
+      try {
+        const { id: eventId } = req.params;
+        const result = await EnrollmentService.registerStudentVirtualCheckIn(req.user.id, eventId);
+        return res.json(result);
+      } catch (error) {
+        if (error.code === 'NOT_ENROLLED') {
+          return res.status(404).json({
+            error: 'No encontrado',
+            message: error.message
+          });
+        }
+        if (error.code === 'ENROLLMENT_NOT_ACTIVE') {
+          return res.status(400).json({
+            error: 'No se puede registrar check-in',
+            message: error.message
+          });
+        }
+        return next(error);
+      }
+    }
+    if (req.user.role === 'admin') {
+      return EnrollmentController.checkIn(req, res, next);
+    }
+    return res.status(403).json({
+      error: 'Prohibido',
+      message: 'No tienes permiso para esta acción'
+    });
+  },
+
+  /**
+   * POST /api/enrollments/:id/check-in (admin — llamado desde checkInDispatcher)
    */
   async checkIn(req, res, next) {
     try {

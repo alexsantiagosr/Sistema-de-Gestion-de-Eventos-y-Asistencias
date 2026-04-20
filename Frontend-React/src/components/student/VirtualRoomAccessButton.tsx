@@ -1,8 +1,11 @@
+import { useState } from 'react';
 import { Video } from 'lucide-react';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/context/AuthContext';
 import { useVirtualAccess } from '@/hooks/useEvents';
 import { useMyEnrollments } from '@/hooks/useEnrollments';
+import { enrollmentsApi } from '@/api/enrollments.api';
 import Button from '@/components/ui/Button';
 import type { Event } from '@/types';
 
@@ -22,6 +25,8 @@ type Props = {
  */
 export default function VirtualRoomAccessButton({ event, className, fullWidth }: Props) {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const [isCheckingIn, setIsCheckingIn] = useState(false);
   const { data: myEnrollments } = useMyEnrollments();
 
   const isStudent = user?.role === 'student';
@@ -37,7 +42,22 @@ export default function VirtualRoomAccessButton({ event, className, fullWidth }:
     return null;
   }
 
-  const handleClick = () => {
+  const handleClick = async () => {
+    setIsCheckingIn(true);
+    try {
+      await enrollmentsApi.checkInVirtualRoom(event.id);
+      queryClient.invalidateQueries({ queryKey: ['enrollments-my'] });
+    } catch (error: unknown) {
+      const msg =
+        error && typeof error === 'object' && 'response' in error
+          ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+          : undefined;
+      toast.error(msg || 'No se pudo registrar la entrada al evento');
+      return;
+    } finally {
+      setIsCheckingIn(false);
+    }
+
     const url = event.location?.trim();
     if (url && /^https?:\/\//i.test(url)) {
       window.open(url, '_blank', 'noopener,noreferrer');
@@ -54,6 +74,7 @@ export default function VirtualRoomAccessButton({ event, className, fullWidth }:
       variant="secondary"
       className={fullWidth ? `w-full ${className || ''}` : className}
       onClick={handleClick}
+      isLoading={isCheckingIn}
     >
       <Video className="w-4 h-4 mr-2" />
       Entrar a la sala

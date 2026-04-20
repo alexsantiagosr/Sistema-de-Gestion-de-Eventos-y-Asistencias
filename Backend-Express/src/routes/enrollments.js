@@ -34,11 +34,10 @@ router.get('/qr/:qrToken',
   EnrollmentController.getByQr
 );
 
-// Rutas de administración (check-in, check-out, mark-used)
+// Check-in: estudiante (id = eventId) o admin (id = enrollmentId)
 router.post('/:id/check-in',
   authMiddleware.authenticate,
-  authMiddleware.requireRole('admin'),
-  EnrollmentController.checkIn
+  EnrollmentController.checkInDispatcher
 );
 
 router.post('/:id/check-out',

@@ -34,9 +34,19 @@ export const enrollmentsApi = {
     return response.data;
   },
 
-  // Registrar check-in (admin)
+  // Registrar check-in (admin — id = inscripción)
   checkIn: async (id: string) => {
     const response = await axiosInstance.post<{ enrollment: Enrollment }>(`/enrollments/${id}/check-in`);
+    return response.data;
+  },
+
+  /** Check-in al entrar a sala virtual (estudiante — eventId del evento) */
+  checkInVirtualRoom: async (eventId: string) => {
+    const response = await axiosInstance.post<{
+      message: string;
+      enrollment: Enrollment;
+      alreadyCheckedIn?: boolean;
+    }>(`/enrollments/${eventId}/check-in`);
     return response.data;
   },
 

@@ -185,6 +185,43 @@ const EnrollmentService = {
   },
 
   /**
+   * Check-in al entrar a sala virtual (estudiante): por event_id, sin sobrescribir check_in existente
+   * @param {string} userId
+   * @param {string} eventId
+   */
+  async registerStudentVirtualCheckIn(userId, eventId) {
+    const enrollment = await EnrollmentModel.findByUserAndEvent(userId, eventId);
+
+    if (!enrollment) {
+      const error = new Error('No estás inscrito en este evento');
+      error.code = 'NOT_ENROLLED';
+      throw error;
+    }
+
+    if (enrollment.status !== 'active') {
+      const error = new Error('Tu inscripción no está activa');
+      error.code = 'ENROLLMENT_NOT_ACTIVE';
+      throw error;
+    }
+
+    if (enrollment.check_in) {
+      return {
+        message: 'Check-in ya registrado',
+        enrollment,
+        alreadyCheckedIn: true
+      };
+    }
+
+    const updated = await EnrollmentModel.checkIn(enrollment.id);
+
+    return {
+      message: 'Check-in registrado exitosamente',
+      enrollment: updated,
+      alreadyCheckedIn: false
+    };
+  },
+
+  /**
    * Registrar salida (check-out)
    * Solo admin puede hacerlo
    * @param {string} enrollmentId - UUID de la inscripción
