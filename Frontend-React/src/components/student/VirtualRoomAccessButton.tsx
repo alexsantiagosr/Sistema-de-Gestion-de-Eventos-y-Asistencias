@@ -1,11 +1,9 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Video } from 'lucide-react';
-import { toast } from 'sonner';
-import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/context/AuthContext';
 import { useVirtualAccess } from '@/hooks/useEvents';
-import { useMyEnrollments, useAutoCheckOut } from '@/hooks/useEnrollments';
-import { enrollmentsApi } from '@/api/enrollments.api';
+import { useMyEnrollments } from '@/hooks/useEnrollments';
 import Button from '@/components/ui/Button';
 import type { Event } from '@/types';
 
@@ -22,16 +20,13 @@ type Props = {
 
 /**
  * Solo para rol estudiante: muestra "Entrar a la sala" cuando el backend confirma acceso.
+ * Navega a la sala virtual interna en lugar de abrir URL externa.
  */
 export default function VirtualRoomAccessButton({ event, className, fullWidth }: Props) {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
-  const [isCheckingIn, setIsCheckingIn] = useState(false);
-  const [hasEnteredRoom, setHasEnteredRoom] = useState(false);
+  const navigate = useNavigate();
+  const [isNavigating, setIsNavigating] = useState(false);
   const { data: myEnrollments } = useMyEnrollments();
-
-  // Auto check-out cuando el usuario sale de la sala virtual
-  useAutoCheckOut(hasEnteredRoom ? event.id : undefined);
 
   const isStudent = user?.role === 'student';
   const isEnrolledActive = Boolean(
@@ -46,31 +41,11 @@ export default function VirtualRoomAccessButton({ event, className, fullWidth }:
     return null;
   }
 
-  const handleClick = async () => {
-    setIsCheckingIn(true);
-    try {
-      await enrollmentsApi.checkInVirtualRoom(event.id);
-      setHasEnteredRoom(true); // Activar auto check-out
-      queryClient.invalidateQueries({ queryKey: ['enrollments-my'] });
-    } catch (error: unknown) {
-      const msg =
-        error && typeof error === 'object' && 'response' in error
-          ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-          : undefined;
-      toast.error(msg || 'No se pudo registrar la entrada al evento');
-      return;
-    } finally {
-      setIsCheckingIn(false);
-    }
-
-    const url = event.location?.trim();
-    if (url && /^https?:\/\//i.test(url)) {
-      window.open(url, '_blank', 'noopener,noreferrer');
-    } else {
-      toast.info(
-        'Acceso a la sala permitido. Si no ves un enlace aquí, revisa la descripción del evento o contacta al organizador.'
-      );
-    }
+  const handleClick = () => {
+    setIsNavigating(true);
+    // Navegar a la sala virtual interna
+    // Check-in/check-out se manejan automáticamente en VirtualRoomPage
+    navigate(`/events/${event.id}/virtual-room`);
   };
 
   return (
@@ -79,7 +54,7 @@ export default function VirtualRoomAccessButton({ event, className, fullWidth }:
       variant="secondary"
       className={fullWidth ? `w-full ${className || ''}` : className}
       onClick={handleClick}
-      isLoading={isCheckingIn}
+      isLoading={isNavigating}
     >
       <Video className="w-4 h-4 mr-2" />
       Entrar a la sala

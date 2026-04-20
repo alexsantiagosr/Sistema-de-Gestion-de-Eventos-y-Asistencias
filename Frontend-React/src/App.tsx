@@ -15,6 +15,7 @@ import EventsPage from '@/pages/student/EventsPage';
 import EventDetailPage from '@/pages/student/EventDetailPage';
 import MyEnrollmentsPage from '@/pages/student/MyEnrollmentsPage';
 import CertificatesPage from '@/pages/student/CertificatesPage';
+import VirtualRoomPage from '@/pages/student/VirtualRoomPage';
 
 // Admin pages
 import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
@@ -46,6 +47,7 @@ function App() {
               <Route path="/panel" element={<Layout><PanelPage /></Layout>} />
               <Route path="/events" element={<Layout><EventsPage /></Layout>} />
               <Route path="/events/:id" element={<Layout><EventDetailPage /></Layout>} />
+              <Route path="/events/:id/virtual-room" element={<VirtualRoomPage />} />
               <Route path="/my-enrollments" element={<Layout><MyEnrollmentsPage /></Layout>} />
               <Route path="/certificates" element={<Layout><CertificatesPage /></Layout>} />
             </Route>
