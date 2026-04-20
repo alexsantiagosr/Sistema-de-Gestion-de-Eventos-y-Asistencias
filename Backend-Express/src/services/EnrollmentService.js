@@ -1,4 +1,5 @@
 const EnrollmentModel = require('../models/EnrollmentModel');
+const EventSessionModel = require('../models/EventSessionModel');
 const EventModel = require('../models/EventModel');
 const { v4: uuidv4 } = require('uuid');
 
@@ -185,7 +186,7 @@ const EnrollmentService = {
   },
 
   /**
-   * Check-in al entrar a sala virtual (estudiante): por event_id, sin sobrescribir check_in existente
+   * Check-in al entrar a sala virtual (estudiante): crear sesión en event_sessions
    * @param {string} userId
    * @param {string} eventId
    */
@@ -204,19 +205,26 @@ const EnrollmentService = {
       throw error;
     }
 
-    if (enrollment.check_in) {
+    // Buscar sesión activa existente
+    const activeSession = await EventSessionModel.findActiveSession(enrollment.id);
+    
+    if (activeSession) {
+      // Ya existe sesión activa, no crear duplicada
       return {
-        message: 'Check-in ya registrado',
+        message: 'Sesión ya iniciada',
         enrollment,
+        session: activeSession,
         alreadyCheckedIn: true
       };
     }
 
-    const updated = await EnrollmentModel.checkIn(enrollment.id);
+    // Crear nueva sesión
+    const session = await EventSessionModel.create(enrollment.id);
 
     return {
       message: 'Check-in registrado exitosamente',
-      enrollment: updated,
+      enrollment,
+      session,
       alreadyCheckedIn: false
     };
   },
@@ -278,7 +286,7 @@ const EnrollmentService = {
   },
 
   /**
-   * Check-out al salir de sala virtual (estudiante): solo si no tiene check_out registrado
+   * Check-out al salir de sala virtual (estudiante): cerrar sesión en event_sessions
    * @param {string} userId - UUID del usuario
    * @param {string} eventId - UUID del evento
    */
@@ -297,26 +305,25 @@ const EnrollmentService = {
       throw error;
     }
 
-    if (!enrollment.check_in) {
-      const error = new Error('Debe registrar check-in antes del check-out');
-      error.code = 'NO_CHECKIN';
-      throw error;
-    }
+    // Buscar sesión activa (sin end_time)
+    const activeSession = await EventSessionModel.findActiveSession(enrollment.id);
 
-    // Si ya tiene check_out registrado, no sobrescribir
-    if (enrollment.check_out) {
+    if (!activeSession) {
+      // No hay sesión activa, retornar éxito (flujo silencioso)
       return {
-        message: 'Check-out ya registrado',
+        message: 'No hay sesión activa para cerrar',
         enrollment,
         alreadyCheckedOut: true
       };
     }
 
-    const updated = await EnrollmentModel.checkOut(enrollment.id);
+    // Cerrar la sesión activa
+    const closedSession = await EventSessionModel.closeSession(activeSession.id);
 
     return {
       message: 'Check-out registrado exitosamente',
-      enrollment: updated,
+      enrollment,
+      session: closedSession,
       alreadyCheckedOut: false
     };
   },
