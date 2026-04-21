@@ -1,6 +1,6 @@
 import { Menu, Bell, LogOut } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { Button } from '@/components/ui/Button';
+import Button from '@/components/ui/Button';
 
 interface NavbarProps {
   onMenuClick: () => void;

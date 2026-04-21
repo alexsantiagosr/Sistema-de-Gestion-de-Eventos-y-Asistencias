@@ -1,10 +1,10 @@
 import { FileText, Download, CheckCircle, XCircle } from 'lucide-react';
 import { useMyCertificates } from '@/hooks/useCertificates';
 import { toast } from 'sonner';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
+import Badge from '@/components/ui/Badge';
+import Button from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
-import { Spinner } from '@/components/ui/Spinner';
+import Spinner from '@/components/ui/Spinner';
 import { certificatesApi } from '@/api/certificates.api';
 
 export default function CertificatesPage() {

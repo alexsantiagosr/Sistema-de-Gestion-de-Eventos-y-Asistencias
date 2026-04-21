@@ -6,8 +6,8 @@ import * as z from 'zod';
 import { ArrowLeft } from 'lucide-react';
 import { useEvent, useCreateEvent, useUpdateEvent } from '@/hooks/useEvents';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 
 // Schema de validación con Zod

@@ -6,12 +6,12 @@ import { es } from 'date-fns/locale';
 import { useEvent } from '@/hooks/useEvents';
 import { useEventEnrollments, useCheckIn, useCheckOut, useMarkAsUsed } from '@/hooks/useEnrollments';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
+import Button from '@/components/ui/Button';
+import Badge from '@/components/ui/Badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Input } from '@/components/ui/Input';
-import { Spinner } from '@/components/ui/Spinner';
-import { Modal } from '@/components/ui/Modal';
+import Input from '@/components/ui/Input';
+import Spinner from '@/components/ui/Spinner';
+import Modal from '@/components/ui/Modal';
 import { enrollmentsApi } from '@/api/enrollments.api';
 
 export default function EventAttendancePage() {

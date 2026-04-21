@@ -5,9 +5,9 @@ import { useMyEnrollments } from '@/hooks/useEnrollments';
 import { useMyCertificates } from '@/hooks/useCertificates';
 import { useAuth } from '@/context/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
-import { Spinner } from '@/components/ui/Spinner';
+import Button from '@/components/ui/Button';
+import Badge from '@/components/ui/Badge';
+import Spinner from '@/components/ui/Spinner';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 

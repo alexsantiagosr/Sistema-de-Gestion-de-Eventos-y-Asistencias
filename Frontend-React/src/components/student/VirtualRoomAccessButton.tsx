@@ -4,7 +4,7 @@ import { Video } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useVirtualAccess } from '@/hooks/useEvents';
 import { useMyEnrollments } from '@/hooks/useEnrollments';
-import { Button } from '@/components/ui/Button';
+import Button from '@/components/ui/Button';
 import type { Event } from '@/types';
 
 function isVirtualOrHybrid(modality: string) {

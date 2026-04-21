@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom';
 import { Calendar, Plus, Ticket, CheckCircle, TrendingUp } from 'lucide-react';
 import { useEvents } from '@/hooks/useEvents';
-import { Spinner } from '@/components/ui/Spinner';
+import Spinner from '@/components/ui/Spinner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import Button from '@/components/ui/Button';
 
 export default function AdminDashboardPage() {
   const { data: eventsData, isLoading: eventsLoading } = useEvents();

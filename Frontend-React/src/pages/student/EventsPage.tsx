@@ -7,10 +7,10 @@ import { useAvailableEvents } from '@/hooks/useEvents';
 import { useEnroll } from '@/hooks/useEnrollments';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
+import Badge from '@/components/ui/Badge';
+import Button from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
-import { Spinner } from '@/components/ui/Spinner';
+import Spinner from '@/components/ui/Spinner';
 import VirtualRoomAccessButton from '@/components/student/VirtualRoomAccessButton';
 
 export default function EventsPage() {

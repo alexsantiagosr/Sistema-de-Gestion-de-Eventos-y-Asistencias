@@ -15,12 +15,12 @@ import { es } from 'date-fns/locale';
 import { useMyEnrollments, useCancelEnrollment } from '@/hooks/useEnrollments';
 import { useDownloadCertificate } from '@/hooks/useCertificates';
 import { toast } from 'sonner';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
+import Badge from '@/components/ui/Badge';
+import Button from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
-import { QRModal } from '@/components/ui/QRModal';
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { Spinner } from '@/components/ui/Spinner';
+import QRModal from '@/components/ui/QRModal';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import Spinner from '@/components/ui/Spinner';
 import { qrApi } from '@/api/qr.api';
 import { certificatesApi } from '@/api/certificates.api';
 
