@@ -5,11 +5,11 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useEvents, useDeleteEvent, useUpdateEventStatus } from '@/hooks/useEvents';
 import { toast } from 'sonner';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
-import Badge from '@/components/ui/Badge';
-import ConfirmDialog from '@/components/ui/ConfirmDialog';
-import Spinner from '@/components/ui/Spinner';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Badge } from '@/components/ui/Badge';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { Spinner } from '@/components/ui/Spinner';
 import { Card, CardContent } from '@/components/ui/Card';
 import {
   Table,

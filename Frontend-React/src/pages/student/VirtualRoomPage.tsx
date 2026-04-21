@@ -5,9 +5,9 @@ import { toast } from 'sonner';
 import { enrollmentsApi } from '@/api/enrollments.api';
 import { useMyEnrollments } from '@/hooks/useEnrollments';
 import { useVirtualAccess } from '@/hooks/useEvents';
-import Button from '@/components/ui/Button';
-import Card from '@/components/ui/Card';
-import Spinner from '@/components/ui/Spinner';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { Spinner } from '@/components/ui/Spinner';
 
 /**
  * Sala virtual interna para eventos
