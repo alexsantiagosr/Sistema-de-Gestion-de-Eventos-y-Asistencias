@@ -5,6 +5,16 @@
 @layer base {
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    caret-color: transparent;
+    cursor: default;
+  }
+
+  input, textarea, p, h1, h2, h3, h4, h5, h6, span {
+    cursor: text;
+  }
+
+  input, textarea, [contenteditable="true"] {
+    caret-color: auto;
   }
 
   /* Ocultar outline en clic (mouse) pero mantener en navegación por teclado */

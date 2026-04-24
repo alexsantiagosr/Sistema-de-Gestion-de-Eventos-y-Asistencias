@@ -20,6 +20,7 @@ import Button from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import QRModal from '@/components/ui/QRModal';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import VirtualRoomAccessButton from '@/components/student/VirtualRoomAccessButton';
 import Spinner from '@/components/ui/Spinner';
 import { qrApi } from '@/api/qr.api';
 import { certificatesApi } from '@/api/certificates.api';
@@ -228,6 +229,14 @@ export default function MyEnrollmentsPage() {
                           <XCircle className="w-4 h-4 mr-2" />
                           Cancelar
                         </Button>
+                        <VirtualRoomAccessButton
+                          event={{
+                            id: enrollment.event_id,
+                            modality: enrollment.events?.modality ?? 'virtual',
+                            location: enrollment.events?.location || ''
+                          }}
+                          className="flex-1 sm:flex-none"
+                        />
                       </>
                     )}
                     {enrollment.status === 'used' && enrollment.events && (

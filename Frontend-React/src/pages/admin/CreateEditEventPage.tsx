@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { ArrowLeft } from 'lucide-react';
@@ -8,6 +8,7 @@ import { useEvent, useCreateEvent, useUpdateEvent } from '@/hooks/useEvents';
 import { toast } from 'sonner';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import CustomSelect from '@/components/ui/CustomSelect';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 
 // Schema de validación con Zod
@@ -51,6 +52,7 @@ export default function CreateEditEventPage() {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
     reset,
   } = useForm<EventFormData>({
@@ -178,18 +180,23 @@ export default function CreateEditEventPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">
                     Modalidad
                   </label>
-                  <select
-                    className="select-styled"
-                    {...register('modality')}
-                  >
-                    <option value="">Seleccionar modalidad</option>
-                    <option value="presencial">Presencial</option>
-                    <option value="virtual">Virtual</option>
-                    <option value="híbrido">Híbrido</option>
-                  </select>
-                  {errors.modality && (
-                    <p className="mt-1 text-sm text-error">{errors.modality.message as string}</p>
-                  )}
+                  <Controller
+                    name="modality"
+                    control={control}
+                    render={({ field }) => (
+                      <CustomSelect
+                        value={field.value || ''}
+                        onChange={field.onChange}
+                        options={[
+                          { value: '', label: 'Seleccionar modalidad' },
+                          { value: 'presencial', label: 'Presencial' },
+                          { value: 'virtual', label: 'Virtual' },
+                          { value: 'híbrido', label: 'Híbrido' },
+                        ]}
+                        error={errors.modality?.message as string}
+                      />
+                    )}
+                  />
                 </div>
               </div>
 

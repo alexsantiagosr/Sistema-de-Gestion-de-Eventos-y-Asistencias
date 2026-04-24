@@ -70,10 +70,6 @@ const EventService = {
       throw err;
     }
 
-    if (event.organized_by && event.organized_by.toLowerCase() === 'unimayor') {
-      return { access: true };
-    }
-
     const windowCheck = this._isWithinEventTimeWindow(event.date, event.duration);
     if (!windowCheck.ok) {
       const err = new Error(windowCheck.message);

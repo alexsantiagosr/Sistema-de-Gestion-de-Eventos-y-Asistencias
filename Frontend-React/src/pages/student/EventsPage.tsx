@@ -11,6 +11,7 @@ import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import Spinner from '@/components/ui/Spinner';
+import CustomSelect from '@/components/ui/CustomSelect';
 import VirtualRoomAccessButton from '@/components/student/VirtualRoomAccessButton';
 
 export default function EventsPage() {
@@ -94,16 +95,16 @@ export default function EventsPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Modalidad
               </label>
-              <select
+              <CustomSelect
                 value={modalityFilter}
-                onChange={(e) => setModalityFilter(e.target.value)}
-                className="select-styled"
-              >
-                <option value="">Todas las modalidades</option>
-                <option value="presencial">Presencial</option>
-                <option value="virtual">Virtual</option>
-                <option value="híbrido">Híbrido</option>
-              </select>
+                onChange={setModalityFilter}
+                options={[
+                  { value: '', label: 'Todas las modalidades' },
+                  { value: 'presencial', label: 'Presencial' },
+                  { value: 'virtual', label: 'Virtual' },
+                  { value: 'híbrido', label: 'Híbrido' },
+                ]}
+              />
             </div>
           </div>
         </CardContent>

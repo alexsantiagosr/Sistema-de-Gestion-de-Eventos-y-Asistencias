@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, Search, Edit2, Eye, CheckCircle } from 'lucide-react';
+import { Plus, Search, Edit2, Eye, CheckCircle, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useEvents, useDeleteEvent, useUpdateEventStatus } from '@/hooks/useEvents';
@@ -10,6 +10,7 @@ import Input from '@/components/ui/Input';
 import Badge from '@/components/ui/Badge';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import Spinner from '@/components/ui/Spinner';
+import CustomSelect from '@/components/ui/CustomSelect';
 import { Card, CardContent } from '@/components/ui/Card';
 import {
   Table,
@@ -37,10 +38,12 @@ export default function ManageEventsPage() {
   const deleteMutation = useDeleteEvent();
   const updateStatusMutation = useUpdateEventStatus();
 
-  // Filtrar por búsqueda
-  const events = eventsData?.events.filter((event) =>
-    event.title.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
+  // Filtrar por búsqueda y ocultar cancelados por defecto
+  const events = eventsData?.events.filter((event) => {
+    const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const hideCancelled = statusFilter !== 'cancelled' && event.status === 'cancelled';
+    return matchesSearch && !hideCancelled;
+  }) || [];
 
   const handleDelete = async () => {
     if (!eventToDelete) return;
@@ -138,31 +141,31 @@ export default function ManageEventsPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
                   Estado
                 </label>
-                <select
+                <CustomSelect
                   value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="select-styled"
-                >
-                  <option value="">Todos los estados</option>
-                  <option value="active">Activos</option>
-                  <option value="completed">Completados</option>
-                  <option value="cancelled">Cancelados</option>
-                </select>
+                  onChange={setStatusFilter}
+                  options={[
+                    { value: '', label: 'Todos los estados' },
+                    { value: 'active', label: 'Activos' },
+                    { value: 'completed', label: 'Completados' },
+                    { value: 'cancelled', label: 'Cancelados' },
+                  ]}
+                />
               </div>
               <div className="flex-1">
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
                   Modalidad
                 </label>
-                <select
+                <CustomSelect
                   value={modalityFilter}
-                  onChange={(e) => setModalityFilter(e.target.value)}
-                  className="select-styled"
-                >
-                  <option value="">Todas las modalidades</option>
-                  <option value="presencial">Presencial</option>
-                  <option value="virtual">Virtual</option>
-                  <option value="híbrido">Híbrido</option>
-                </select>
+                  onChange={setModalityFilter}
+                  options={[
+                    { value: '', label: 'Todas las modalidades' },
+                    { value: 'presencial', label: 'Presencial' },
+                    { value: 'virtual', label: 'Virtual' },
+                    { value: 'híbrido', label: 'Híbrido' },
+                  ]}
+                />
               </div>
             </div>
           </CardContent>
@@ -242,6 +245,14 @@ export default function ManageEventsPage() {
                               </Button>
                             </>
                           )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setEventToDelete({ id: event.id, title: event.title })}
+                            className="hidden sm:inline-flex text-error hover:bg-error/10"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
