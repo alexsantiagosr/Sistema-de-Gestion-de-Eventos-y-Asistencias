@@ -29,6 +29,11 @@ export default function VirtualRoomPage() {
   const totalActiveSeconds = useRef(0); // Segundos totales para UI
   const isSending = useRef(false);
   const [sessionMinutes, setSessionMinutes] = useState(0);
+  
+  // Variables para advertencia de salida de sala
+  const [tabSwitchCount, setTabSwitchCount] = useState(0);
+  const [showWarning, setShowWarning] = useState(false);
+  const warningTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // Control de tiempo activo (HU-07)
   useEffect(() => {
@@ -80,9 +85,13 @@ export default function VirtualRoomPage() {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         startCounting();
+        setShowWarning(true);
+        if (warningTimeout.current) clearTimeout(warningTimeout.current);
+        warningTimeout.current = setTimeout(() => setShowWarning(false), 4000);
       } else if (document.visibilityState === 'hidden') {
         stopCounting();
         sendTime(); // Enviar acumulado al ocultar la pestaña
+        setTabSwitchCount((prev) => prev + 1);
       }
     };
 
@@ -103,6 +112,7 @@ export default function VirtualRoomPage() {
     return () => {
       stopCounting();
       sendTime();
+      if (warningTimeout.current) clearTimeout(warningTimeout.current);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
@@ -202,6 +212,9 @@ export default function VirtualRoomPage() {
             <span className="text-xs text-gray-500">
               Tiempo: {sessionMinutes} {sessionMinutes === 1 ? 'minuto' : 'minutos'}
             </span>
+            <span className="text-xs text-gray-600 mt-0.5">
+              Salidas: {tabSwitchCount}
+            </span>
           </div>
 
           <button
@@ -223,6 +236,13 @@ export default function VirtualRoomPage() {
           />
         </div>
       </div>
+
+      {/* Alerta flotante de advertencia */}
+      {showWarning && (
+        <div className="fixed bottom-4 right-4 bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-3 rounded-lg shadow-md z-50">
+          Has salido de la sala. Esto puede afectar tu certificación.
+        </div>
+      )}
     </div>
   );
 }
