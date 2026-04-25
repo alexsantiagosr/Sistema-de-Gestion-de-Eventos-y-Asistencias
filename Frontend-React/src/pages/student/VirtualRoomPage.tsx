@@ -34,6 +34,13 @@ export default function VirtualRoomPage() {
   const [tabSwitchCount, setTabSwitchCount] = useState(0);
   const [showWarning, setShowWarning] = useState(false);
 
+  // Variables para tiempo restante
+  const [remainingTime, setRemainingTime] = useState(0);
+
+  const handleExit = () => {
+    navigate('/events');
+  };
+
   // Control de tiempo activo (HU-07)
   useEffect(() => {
     if (!eventId) return;
@@ -145,6 +152,36 @@ export default function VirtualRoomPage() {
     };
   }, []);
 
+  // Cierre automático de sala virtual según duración del evento
+  useEffect(() => {
+    if (!eventInfo?.date || !eventInfo?.duration) return;
+
+    const eventStart = new Date(eventInfo.date).getTime();
+    const eventEnd = eventStart + (eventInfo.duration * 60 * 1000);
+    const now = Date.now();
+
+    // Validación inicial: si entra tarde y ya terminó
+    if (now >= eventEnd) {
+      alert("El evento ya ha finalizado");
+      handleExit();
+      return;
+    }
+
+    const interval = setInterval(() => {
+      const currentNow = Date.now();
+      const remaining = eventEnd - currentNow;
+
+      if (currentNow >= eventEnd) {
+        alert("El evento ha finalizado");
+        handleExit();
+      } else {
+        setRemainingTime(remaining > 0 ? remaining : 0);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [eventInfo]);
+
   // Check-in automático al montar el componente
   useEffect(() => {
     if (!eventId) {
@@ -240,12 +277,15 @@ export default function VirtualRoomPage() {
               Tiempo: {sessionMinutes} {sessionMinutes === 1 ? 'minuto' : 'minutos'}
             </span>
             <span className="text-xs text-gray-600 mt-0.5">
+              Tiempo restante: {Math.floor(remainingTime / 60000)} min
+            </span>
+            <span className="text-xs text-gray-600 mt-0.5">
               Salidas: {tabSwitchCount}
             </span>
           </div>
 
           <button
-            onClick={() => navigate('/events')}
+            onClick={handleExit}
             className="px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-lg hover:bg-red-600 transition"
           >
             Salir
