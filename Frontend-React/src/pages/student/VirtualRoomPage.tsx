@@ -25,7 +25,8 @@ export default function VirtualRoomPage() {
   const eventInfo = currentEnrollment?.events;
 
   // Variables para control de tiempo activo (HU-07)
-  const activeSeconds = useRef(0);
+  const accumulatedSeconds = useRef(0); // Segundos acumulados pendientes por enviar
+  const totalActiveSeconds = useRef(0); // Segundos totales para UI
   const isSending = useRef(false);
   const [sessionMinutes, setSessionMinutes] = useState(0);
 
@@ -33,51 +34,79 @@ export default function VirtualRoomPage() {
   useEffect(() => {
     if (!eventId) return;
 
-    let intervalId: NodeJS.Timeout;
+    let intervalId: NodeJS.Timeout | null = null;
 
-    const startTimer = () => {
-      // Usar intervalo de 5 segundos para optimizar rendimiento
-      intervalId = setInterval(async () => {
-        if (document.visibilityState === 'visible') {
-          activeSeconds.current += 5;
-          const currentMinutes = Math.floor(activeSeconds.current / 60);
-          
-          if (currentMinutes > sessionMinutes) {
-            setSessionMinutes(currentMinutes);
-          }
+    const sendTime = async () => {
+      if (accumulatedSeconds.current > 0 && !isSending.current) {
+        const secondsToSend = accumulatedSeconds.current;
+        isSending.current = true;
+        accumulatedSeconds.current = 0; // Reset para el siguiente ciclo
 
-          // Enviar cada 60 segundos (cuando coincide el múltiplo exacto de 60)
-          if (activeSeconds.current > 0 && activeSeconds.current % 60 === 0) {
-            if (isSending.current) return;
-            isSending.current = true;
-            try {
-              // Enviar reporte de 1 minuto acumulado
-              await enrollmentsApi.addAttendanceTime(eventId, 1);
-            } catch (error) {
-              console.error('Error reportando tiempo activo:', error);
-            } finally {
-              isSending.current = false;
-            }
-          }
+        try {
+          await enrollmentsApi.addAttendanceTime(eventId, secondsToSend);
+        } catch (error) {
+          console.error('Error reportando tiempo activo:', error);
+          // Si hay error, devolvemos los segundos para reintentar luego
+          accumulatedSeconds.current += secondsToSend;
+        } finally {
+          isSending.current = false;
         }
-      }, 5000);
-    };
-
-    startTimer();
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') {
-        // Pausar logica externa no es necesario, el interval chequea visibilityState directamente
       }
     };
 
+    const startCounting = () => {
+      if (intervalId) return;
+      intervalId = setInterval(() => {
+        accumulatedSeconds.current += 1;
+        totalActiveSeconds.current += 1;
+        
+        const currentMinutes = Math.floor(totalActiveSeconds.current / 60);
+        setSessionMinutes((prev) => (currentMinutes > prev ? currentMinutes : prev));
+
+        // Enviar cada 60 segundos
+        if (accumulatedSeconds.current >= 60) {
+          sendTime();
+        }
+      }, 1000);
+    };
+
+    const stopCounting = () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        startCounting();
+      } else if (document.visibilityState === 'hidden') {
+        stopCounting();
+        sendTime(); // Enviar acumulado al ocultar la pestaña
+      }
+    };
+
+    const handleBeforeUnload = () => {
+      if (accumulatedSeconds.current > 0) {
+        sendTime();
+      }
+    };
+
+    // Al cargar el componente
+    if (document.visibilityState === 'visible') {
+      startCounting();
+    }
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('beforeunload', handleBeforeUnload);
 
     return () => {
-      clearInterval(intervalId);
+      stopCounting();
+      sendTime();
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [eventId, sessionMinutes]);
+  }, [eventId]);
 
   // Check-in automático al montar el componente
   useEffect(() => {

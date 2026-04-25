@@ -343,16 +343,16 @@ const EnrollmentController = {
 
   /**
    * POST /api/enrollments/:eventId/attendance-time
-   * Acumular minutos de asistencia activa (student)
+   * Acumular segundos de asistencia activa (student)
    */
   async addAttendanceTime(req, res, next) {
     try {
       const { eventId } = req.params;
-      const { minutes } = req.body;
+      const { seconds } = req.body;
       const userId = req.user.id;
 
-      if (typeof minutes !== 'number' || minutes <= 0 || minutes > 60) {
-        return res.status(400).json({ error: 'Tiempo activo inválido (debe ser numérico entre 0 y 60)' });
+      if (typeof seconds !== 'number' || seconds <= 0 || seconds > 300) { // Permitir hasta 5 minutos por seguridad
+        return res.status(400).json({ error: 'Tiempo activo inválido (debe ser numérico mayor a 0 y razonable)' });
       }
 
       // Validar enrollment existente
@@ -363,7 +363,7 @@ const EnrollmentController = {
         return res.status(404).json({ error: 'Inscripción no encontrada o no está activa' });
       }
 
-      console.log(`[ATTENDANCE-TIME] USER ${userId} | EVENT ${eventId} | ACTIVE MINUTES REPORTED: ${minutes}`);
+      await EnrollmentService.addActiveSeconds(eventEnrollment.id, seconds);
 
       res.json({ ok: true, message: 'Tiempo activo reportado con éxito.' });
     } catch (error) {

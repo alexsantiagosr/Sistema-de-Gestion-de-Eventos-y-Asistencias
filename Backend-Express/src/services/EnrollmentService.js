@@ -366,6 +366,23 @@ const EnrollmentService = {
       min_required: event.min_attendance_percentage,
       certified: false
     };
+  },
+
+  /**
+   * Agregar segundos activos a una inscripción
+   * @param {string} enrollmentId - UUID de la inscripción
+   * @param {number} seconds - Segundos activos a agregar
+   */
+  async addActiveSeconds(enrollmentId, seconds) {
+    const enrollment = await this.getEnrollment(enrollmentId);
+
+    if (enrollment.status !== 'active') {
+      const error = new Error('La inscripción no está activa');
+      error.code = 'ENROLLMENT_NOT_ACTIVE';
+      throw error;
+    }
+
+    return await EnrollmentModel.addActiveSeconds(enrollmentId, seconds);
   }
 };
 

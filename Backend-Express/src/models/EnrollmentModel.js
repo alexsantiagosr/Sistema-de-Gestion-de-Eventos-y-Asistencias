@@ -241,6 +241,36 @@ const EnrollmentModel = {
 
     if (error) throw error;
     return data || [];
+  },
+
+  /**
+   * Incrementar segundos activos de una inscripción
+   * @param {string} id - UUID de la inscripción
+   * @param {number} seconds - Segundos a incrementar
+   * @returns {Promise<Object>} Inscripción actualizada
+   */
+  async addActiveSeconds(id, seconds) {
+    // Primero obtenemos el valor actual
+    const { data: currentData, error: fetchError } = await supabaseAdmin
+      .from('enrollments')
+      .select('active_seconds')
+      .eq('id', id)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    const currentSeconds = currentData?.active_seconds || 0;
+
+    // Actualizamos con el nuevo valor
+    const { data, error } = await supabaseAdmin
+      .from('enrollments')
+      .update({ active_seconds: currentSeconds + seconds })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
   }
 };
 
