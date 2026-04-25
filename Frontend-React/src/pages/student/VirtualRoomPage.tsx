@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { enrollmentsApi } from '@/api/enrollments.api';
 import { useMyEnrollments } from '@/hooks/useEnrollments';
@@ -155,67 +154,45 @@ export default function VirtualRoomPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="bg-card border-b border-border">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/events')}
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Atrás
-            </Button>
-            <div>
-              <h1 className="text-xl font-semibold">{eventInfo.title}</h1>
-              <p className="text-sm text-secondary">Sala virtual</p>
-            </div>
+    <div className="flex flex-col h-screen bg-gray-100">
+      {/* Header Fijo */}
+      <div className="flex items-center justify-between px-6 py-4 bg-white shadow-sm">
+        <h1 className="text-lg font-semibold text-gray-800 line-clamp-1">
+          {eventInfo?.title || 'Sala Virtual'}
+        </h1>
+
+        <div className="flex items-center gap-4">
+          <div className="flex flex-col items-end mr-2">
+            <span className="text-sm font-medium text-green-600 flex items-center gap-2">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+              </span>
+              En vivo
+            </span>
+            <span className="text-xs text-gray-500">
+              Tiempo: {sessionMinutes} {sessionMinutes === 1 ? 'minuto' : 'minutos'}
+            </span>
           </div>
+
+          <button
+            onClick={() => navigate('/events')}
+            className="px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-lg hover:bg-red-600 transition"
+          >
+            Salir
+          </button>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="container mx-auto px-4 py-8">
-        <Card className="max-w-2xl mx-auto">
-          <div className="text-center">
-            {/* Message */}
-            <div className="mb-8">
-              <p className="text-lg text-secondary">
-                Estás participando en el evento
-              </p>
-              <h2 className="text-2xl font-bold mt-2">{eventInfo.title}</h2>
-            </div>
-
-            {/* Jitsi Video Conferencing */}
-            <div className="w-full mb-8">
-              <iframe
-                src={`https://meet.jit.si/event-${eventId}`}
-                allow="camera; microphone; fullscreen; display-capture"
-                style={{
-                  width: '100%',
-                  height: '80vh',
-                  border: 'none',
-                  borderRadius: '12px'
-                }}
-              />
-            </div>
-
-            {/* Status */}
-            <div className="bg-success/10 border border-success/20 rounded-lg p-4">
-              <p className="text-sm text-success font-medium">
-                ✓ Sesión activa y sincronizada.
-              </p>
-              <p className="text-sm font-semibold mt-1">
-                Tiempo activo en sala: {sessionMinutes} {sessionMinutes === 1 ? 'minuto' : 'minutos'}
-              </p>
-              <p className="text-xs text-secondary mt-2">
-                Tu asistencia se registra en segundo plano automáticamente mientras permanezcas en esta pantalla.
-              </p>
-            </div>
-          </div>
-        </Card>
+      {/* Video Contenedor (Fullscreen adaptativo) */}
+      <div className="flex-1 p-4 md:p-6 overflow-hidden">
+        <div className="w-full h-full overflow-hidden rounded-2xl shadow-md bg-black">
+          <iframe
+            src={`https://meet.jit.si/event-${eventId}`}
+            allow="camera; microphone; fullscreen; display-capture"
+            className="w-full h-full border-0"
+          />
+        </div>
       </div>
     </div>
   );
