@@ -66,4 +66,10 @@ router.get('/:eventId/attendance',
   EnrollmentController.getAttendance
 );
 
+// Registrar tiempo de asistencia activa (student)
+router.post('/:eventId/attendance-time',
+  authMiddleware.authenticate,
+  EnrollmentController.addAttendanceTime
+);
+
 module.exports = router;

@@ -16,8 +16,13 @@ const eventSchema = z.object({
   title: z.string().min(3, 'El título debe tener al menos 3 caracteres'),
   description: z.string().optional(),
   date: z.string().refine(
-    (val) => new Date(val) > new Date(),
-    'La fecha debe ser futura'
+    (val) => {
+      const eventDate = new Date(val);
+      const now = new Date();
+      now.setMinutes(now.getMinutes() - 15);
+      return eventDate >= now;
+    },
+    'La fecha del evento no puede estar en el pasado'
   ),
   modality: z.enum(['presencial', 'virtual', 'híbrido']),
   capacity: z.coerce.number().min(1, 'La capacidad debe ser mayor a 0'),
@@ -68,10 +73,18 @@ export default function CreateEditEventPage() {
   useEffect(() => {
     if (eventData?.event && isEdit) {
       const event = eventData.event;
+      const localDate = new Date(event.date);
+      const year = localDate.getFullYear();
+      const month = String(localDate.getMonth() + 1).padStart(2, '0');
+      const day = String(localDate.getDate()).padStart(2, '0');
+      const hours = String(localDate.getHours()).padStart(2, '0');
+      const minutes = String(localDate.getMinutes()).padStart(2, '0');
+      const localDateString = `${year}-${month}-${day}T${hours}:${minutes}`;
+
       reset({
         title: event.title,
         description: event.description || '',
-        date: event.date.slice(0, 16), // Formato para datetime-local
+        date: localDateString, // Format for datetime-local without losing timezone offset
         modality: event.modality,
         capacity: event.capacity,
         duration: event.duration,
@@ -86,6 +99,7 @@ export default function CreateEditEventPage() {
     try {
       const payload = {
         ...data,
+        date: new Date(data.date).toISOString(), // Send as absolute UTC timestamp
         description: data.description || '',
         location: data.location || '',
         organized_by: data.organized_by || '',

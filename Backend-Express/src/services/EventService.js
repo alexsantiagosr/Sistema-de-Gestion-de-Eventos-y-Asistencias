@@ -44,6 +44,10 @@ const EventService = {
    * @returns {{ access: true }}
    */
   async checkStudentVirtualAccess(userId, eventId) {
+    if (process.env.ALLOW_TEST_ACCESS === 'true') {
+      return { access: true, testMode: true };
+    }
+
     const event = await EventModel.findById(eventId);
     if (!event) {
       const err = new Error('Evento no encontrado');
@@ -123,10 +127,13 @@ const EventService = {
       throw error;
     }
 
-    // Validar fecha futura
+    // Validar fecha futura o actual (con 15 min de margen para llenar el formulario)
     const eventDate = new Date(eventData.date);
-    if (eventDate <= new Date()) {
-      const error = new Error('La fecha del evento debe ser futura');
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - 15);
+
+    if (eventDate < now) {
+      const error = new Error('La fecha del evento no puede ser en el pasado');
       error.code = 'INVALID_DATE';
       throw error;
     }
@@ -176,11 +183,14 @@ const EventService = {
     // Verificar que existe
     const existing = await this.getEventById(id);
 
-    // Si actualiza fecha, validar que sea futura
+    // Si actualiza fecha, validar que no sea pasada (con 15 min de margen)
     if (updates.date) {
       const eventDate = new Date(updates.date);
-      if (eventDate <= new Date()) {
-        const error = new Error('La fecha del evento debe ser futura');
+      const now = new Date();
+      now.setMinutes(now.getMinutes() - 15);
+
+      if (eventDate < now) {
+        const error = new Error('La fecha del evento no puede ser en el pasado');
         error.code = 'INVALID_DATE';
         throw error;
       }

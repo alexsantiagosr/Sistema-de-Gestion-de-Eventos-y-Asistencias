@@ -4,7 +4,7 @@ import { Calendar, MapPin, Clock, Users, Search } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useAvailableEvents } from '@/hooks/useEvents';
-import { useEnroll } from '@/hooks/useEnrollments';
+import { useEnroll, useMyEnrollments } from '@/hooks/useEnrollments';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 import Badge from '@/components/ui/Badge';
@@ -23,7 +23,10 @@ export default function EventsPage() {
   const [enrollingId, setEnrollingId] = useState<string | null>(null);
 
   const { data: eventsData, isLoading } = useAvailableEvents();
+  const { data: myEnrollmentsData } = useMyEnrollments();
   const enrollMutation = useEnroll();
+
+  const myEnrollments = myEnrollmentsData?.enrollments || [];
 
   // Filtrar eventos
   const events = eventsData?.events.filter((event) => {
@@ -129,8 +132,13 @@ export default function EventsPage() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
-          {events.map((event) => (
-            <Card key={event.id} className="flex flex-col">
+          {events.map((event) => {
+            const isEnrolled = myEnrollments.some(
+              (enrollment) => enrollment.event_id === event.id && enrollment.status === 'active'
+            );
+
+            return (
+              <Card key={event.id} className="flex flex-col">
               {/* Event Header with Gradient */}
               <div
                 className={`h-28 sm:h-32 rounded-t-2xl relative p-4 sm:p-6 ${event.modality === 'presencial'
@@ -201,22 +209,24 @@ export default function EventsPage() {
                     </div>
                   )}
                   {!isAdmin ? (
-                    <Button
-                      className="w-full"
-                      disabled={event.available_slots === 0 || enrollingId === event.id}
-                      onClick={() => handleEnroll(event.id, event.title)}
-                    >
-                      {enrollingId === event.id ? (
-                        <>
-                          <Spinner className="w-4 h-4 mr-2" />
-                          Inscribiendo...
-                        </>
-                      ) : event.available_slots === 0 ? (
-                        'Sin cupos'
-                      ) : (
-                        'Inscribirse'
-                      )}
-                    </Button>
+                    !isEnrolled ? (
+                      <Button
+                        className="w-full"
+                        disabled={event.available_slots === 0 || enrollingId === event.id}
+                        onClick={() => handleEnroll(event.id, event.title)}
+                      >
+                        {enrollingId === event.id ? (
+                          <>
+                            <Spinner className="w-4 h-4 mr-2" />
+                            Inscribiendo...
+                          </>
+                        ) : event.available_slots === 0 ? (
+                          'Sin cupos'
+                        ) : (
+                          'Inscribirse'
+                        )}
+                      </Button>
+                    ) : null
                   ) : (
                     <span className="text-sm text-gray-400 italic px-3 py-2 block text-center">
                       Solo lectura
@@ -225,7 +235,8 @@ export default function EventsPage() {
                 </div>
               </CardContent>
             </Card>
-          ))}
+          );
+        })}
         </div>
       )}
     </div>

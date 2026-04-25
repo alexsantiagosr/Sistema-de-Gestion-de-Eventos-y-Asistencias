@@ -83,4 +83,10 @@ export const enrollmentsApi = {
     const response = await axiosInstance.get(`/enrollments/${eventId}/attendance`);
     return response.data;
   },
+
+  // Registrar tiempo activo de videollamada
+  addAttendanceTime: async (eventId: string, minutes: number) => {
+    const response = await axiosInstance.post<{ ok: boolean; message: string }>(`/enrollments/${eventId}/attendance-time`, { minutes });
+    return response.data;
+  },
 };

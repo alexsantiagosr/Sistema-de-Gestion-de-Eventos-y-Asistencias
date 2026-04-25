@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
@@ -24,6 +24,61 @@ export default function VirtualRoomPage() {
     (e) => e.event_id === eventId && e.status === 'active'
   );
   const eventInfo = currentEnrollment?.events;
+
+  // Variables para control de tiempo activo (HU-07)
+  const activeSeconds = useRef(0);
+  const isSending = useRef(false);
+  const [sessionMinutes, setSessionMinutes] = useState(0);
+
+  // Control de tiempo activo (HU-07)
+  useEffect(() => {
+    if (!eventId) return;
+
+    let intervalId: NodeJS.Timeout;
+
+    const startTimer = () => {
+      // Usar intervalo de 5 segundos para optimizar rendimiento
+      intervalId = setInterval(async () => {
+        if (document.visibilityState === 'visible') {
+          activeSeconds.current += 5;
+          const currentMinutes = Math.floor(activeSeconds.current / 60);
+          
+          if (currentMinutes > sessionMinutes) {
+            setSessionMinutes(currentMinutes);
+          }
+
+          // Enviar cada 60 segundos (cuando coincide el múltiplo exacto de 60)
+          if (activeSeconds.current > 0 && activeSeconds.current % 60 === 0) {
+            if (isSending.current) return;
+            isSending.current = true;
+            try {
+              // Enviar reporte de 1 minuto acumulado
+              await enrollmentsApi.addAttendanceTime(eventId, 1);
+            } catch (error) {
+              console.error('Error reportando tiempo activo:', error);
+            } finally {
+              isSending.current = false;
+            }
+          }
+        }
+      }, 5000);
+    };
+
+    startTimer();
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        // Pausar logica externa no es necesario, el interval chequea visibilityState directamente
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [eventId, sessionMinutes]);
 
   // Check-in automático al montar el componente
   useEffect(() => {
@@ -133,23 +188,30 @@ export default function VirtualRoomPage() {
               <h2 className="text-2xl font-bold mt-2">{eventInfo.title}</h2>
             </div>
 
-            {/* Placeholder for video conferencing */}
-            <div className="bg-secondary/10 rounded-lg border-2 border-dashed border-border p-16 mb-8">
-              <div className="text-center">
-                <p className="text-secondary mb-2">Videoconferencia</p>
-                <p className="text-sm text-secondary/80">
-                  Aquí se integrará la videoconferencia
-                </p>
-              </div>
+            {/* Jitsi Video Conferencing */}
+            <div className="w-full mb-8">
+              <iframe
+                src={`https://meet.jit.si/event-${eventId}`}
+                allow="camera; microphone; fullscreen; display-capture"
+                style={{
+                  width: '100%',
+                  height: '80vh',
+                  border: 'none',
+                  borderRadius: '12px'
+                }}
+              />
             </div>
 
             {/* Status */}
             <div className="bg-success/10 border border-success/20 rounded-lg p-4">
-              <p className="text-sm text-success">
-                ✓ Sesión iniciada. Permanece en esta página para mantener la sesión activa.
+              <p className="text-sm text-success font-medium">
+                ✓ Sesión activa y sincronizada.
+              </p>
+              <p className="text-sm font-semibold mt-1">
+                Tiempo activo en sala: {sessionMinutes} {sessionMinutes === 1 ? 'minuto' : 'minutos'}
               </p>
               <p className="text-xs text-secondary mt-2">
-                Tu asistencia se registrará automáticamente.
+                Tu asistencia se registra en segundo plano automáticamente mientras permanezcas en esta pantalla.
               </p>
             </div>
           </div>

@@ -75,9 +75,9 @@ const EventController = {
       const { eventId } = req.params;
       const userId = req.user.id;
 
-      await EventService.checkStudentVirtualAccess(userId, eventId);
+      const result = await EventService.checkStudentVirtualAccess(userId, eventId);
 
-      res.json({ access: true });
+      res.json(result);
     } catch (error) {
       if (error.code === 'NOT_FOUND') {
         return res.status(404).json({
