@@ -33,7 +33,6 @@ export default function VirtualRoomPage() {
   // Variables para advertencia de salida de sala
   const [tabSwitchCount, setTabSwitchCount] = useState(0);
   const [showWarning, setShowWarning] = useState(false);
-  const warningTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // Control de tiempo activo (HU-07)
   useEffect(() => {
@@ -85,13 +84,9 @@ export default function VirtualRoomPage() {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         startCounting();
-        setShowWarning(true);
-        if (warningTimeout.current) clearTimeout(warningTimeout.current);
-        warningTimeout.current = setTimeout(() => setShowWarning(false), 4000);
       } else if (document.visibilityState === 'hidden') {
         stopCounting();
         sendTime(); // Enviar acumulado al ocultar la pestaña
-        setTabSwitchCount((prev) => prev + 1);
       }
     };
 
@@ -112,11 +107,43 @@ export default function VirtualRoomPage() {
     return () => {
       stopCounting();
       sendTime();
-      if (warningTimeout.current) clearTimeout(warningTimeout.current);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, [eventId]);
+
+  // Detección robusta de cambio de pestaña (blur, focus, visibilitychange)
+  useEffect(() => {
+    const handleHidden = () => {
+      setTabSwitchCount((prev) => prev + 1);
+    };
+
+    const handleVisible = () => {
+      setShowWarning(true);
+
+      setTimeout(() => {
+        setShowWarning(false);
+      }, 4000);
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        handleHidden();
+      } else {
+        handleVisible();
+      }
+    };
+
+    window.addEventListener('blur', handleHidden);
+    window.addEventListener('focus', handleVisible);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('blur', handleHidden);
+      window.removeEventListener('focus', handleVisible);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
 
   // Check-in automático al montar el componente
   useEffect(() => {
