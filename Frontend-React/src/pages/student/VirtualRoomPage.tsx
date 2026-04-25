@@ -188,7 +188,7 @@ export default function VirtualRoomPage() {
       <div className="flex-1 p-4 md:p-6 overflow-hidden">
         <div className="w-full h-full overflow-hidden rounded-2xl shadow-md bg-black">
           <iframe
-            src={`https://meet.jit.si/event-${eventId}`}
+            src={`https://meet.jit.si/event-${eventId}#config.prejoinPageEnabled=false&config.requireDisplayName=false`}
             allow="camera; microphone; fullscreen; display-capture"
             className="w-full h-full border-0"
           />
