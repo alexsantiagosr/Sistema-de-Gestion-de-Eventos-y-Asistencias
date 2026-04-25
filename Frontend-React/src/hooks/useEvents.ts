@@ -18,6 +18,7 @@ export function useEvents(filters?: EventsFilters) {
     staleTime: 0,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
+    refetchInterval: 30000,
   });
 }
 

@@ -312,22 +312,34 @@ export default function VirtualRoomPage() {
 
       {/* Modal de evento finalizado */}
       {showEndModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl shadow-lg p-6 w-[90%] max-w-md text-center">
-            <h2 className="text-xl font-semibold mb-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 w-[90%] max-w-md text-center transform scale-100 animate-scaleIn">
+            {/* Icono */}
+            <div className="flex justify-center mb-4">
+              <div className="bg-red-100 text-red-600 rounded-full p-4 text-2xl">
+                ⛔
+              </div>
+            </div>
+
+            {/* Título */}
+            <h2 className="text-2xl font-bold mb-2">
               Evento finalizado
             </h2>
+
+            {/* Descripción */}
             <p className="text-gray-600 mb-6">
-              El evento ha finalizado. Gracias por tu participación.
+              El evento ha concluido. Gracias por tu participación.
             </p>
+
+            {/* Botón */}
             <button
               onClick={() => {
                 setShowEndModal(false);
                 handleExit();
               }}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition font-medium"
             >
-              Aceptar
+              Salir de la sala
             </button>
           </div>
         </div>
