@@ -33,6 +33,7 @@ export default function VirtualRoomPage() {
   // Variables para advertencia de salida de sala
   const [tabSwitchCount, setTabSwitchCount] = useState(0);
   const [showWarning, setShowWarning] = useState(false);
+  const [showEndModal, setShowEndModal] = useState(false);
 
   // Variables para tiempo restante
   const [remainingTime, setRemainingTime] = useState(0);
@@ -162,8 +163,7 @@ export default function VirtualRoomPage() {
 
     // Validación inicial: si entra tarde y ya terminó
     if (now >= eventEnd) {
-      alert("El evento ya ha finalizado");
-      handleExit();
+      setShowEndModal(true);
       return;
     }
 
@@ -172,8 +172,7 @@ export default function VirtualRoomPage() {
       const remaining = eventEnd - currentNow;
 
       if (currentNow >= eventEnd) {
-        alert("El evento ha finalizado");
-        handleExit();
+        setShowEndModal(true);
       } else {
         setRemainingTime(remaining > 0 ? remaining : 0);
       }
@@ -308,6 +307,29 @@ export default function VirtualRoomPage() {
       {showWarning && (
         <div className="fixed bottom-4 right-4 bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-3 rounded-lg shadow-md z-50">
           Has salido de la sala. Esto puede afectar tu certificación.
+        </div>
+      )}
+
+      {/* Modal de evento finalizado */}
+      {showEndModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-lg p-6 w-[90%] max-w-md text-center">
+            <h2 className="text-xl font-semibold mb-4">
+              Evento finalizado
+            </h2>
+            <p className="text-gray-600 mb-6">
+              El evento ha finalizado. Gracias por tu participación.
+            </p>
+            <button
+              onClick={() => {
+                setShowEndModal(false);
+                handleExit();
+              }}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            >
+              Aceptar
+            </button>
+          </div>
         </div>
       )}
     </div>

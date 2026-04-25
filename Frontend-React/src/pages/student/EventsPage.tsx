@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Calendar, MapPin, Clock, Users, Search } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { useAvailableEvents } from '@/hooks/useEvents';
+import { useEvents } from '@/hooks/useEvents';
 import { useEnroll, useMyEnrollments } from '@/hooks/useEnrollments';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
@@ -22,7 +22,7 @@ export default function EventsPage() {
   const [modalityFilter, setModalityFilter] = useState<string>('');
   const [enrollingId, setEnrollingId] = useState<string | null>(null);
 
-  const { data: eventsData, isLoading } = useAvailableEvents();
+  const { data: eventsData, isLoading } = useEvents();
   const { data: myEnrollmentsData } = useMyEnrollments();
   const enrollMutation = useEnroll();
 
@@ -137,6 +137,18 @@ export default function EventsPage() {
               (enrollment) => enrollment.event_id === event.id && enrollment.status === 'active'
             );
 
+            const eventEnd = new Date(event.date).getTime() + (event.duration * 60000);
+            const now = Date.now();
+
+            let status = "";
+            if (now < new Date(event.date).getTime()) {
+              status = "Próximo";
+            } else if (now >= new Date(event.date).getTime() && now < eventEnd) {
+              status = "En vivo";
+            } else {
+              status = "Finalizado";
+            }
+
             return (
               <Card key={event.id} className="flex flex-col">
               {/* Event Header with Gradient */}
@@ -157,6 +169,13 @@ export default function EventsPage() {
               </div>
 
               <CardContent className="flex-1 flex flex-col p-4 sm:p-6">
+                {status === "Finalizado" && (
+                  <div className="mb-3">
+                    <span className="text-red-500 text-sm font-medium">
+                      Finalizado
+                    </span>
+                  </div>
+                )}
                 {/* Event Details */}
                 <div className="space-y-2 sm:space-y-3 flex-1">
                   <div className="flex items-center text-xs sm:text-sm text-secondary">
@@ -203,12 +222,12 @@ export default function EventsPage() {
                       Ver detalle
                     </Button>
                   </Link>
-                  {!isAdmin && (
+                  {status !== "Finalizado" && !isAdmin && (
                     <div className="mb-2">
                       <VirtualRoomAccessButton event={event} fullWidth />
                     </div>
                   )}
-                  {!isAdmin ? (
+                  {status !== "Finalizado" && !isAdmin ? (
                     !isEnrolled ? (
                       <Button
                         className="w-full"
@@ -229,7 +248,7 @@ export default function EventsPage() {
                     ) : null
                   ) : (
                     <span className="text-sm text-gray-400 italic px-3 py-2 block text-center">
-                      Solo lectura
+                      {isAdmin ? 'Solo lectura' : 'Evento no disponible'}
                     </span>
                   )}
                 </div>

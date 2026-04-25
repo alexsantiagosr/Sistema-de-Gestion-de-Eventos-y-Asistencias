@@ -92,14 +92,31 @@ export default function MyEnrollmentsPage() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    const config = {
-      active: { variant: 'success' as const, label: 'Activa' },
-      used: { variant: 'info' as const, label: 'Completada' },
-      cancelled: { variant: 'error' as const, label: 'Cancelada' },
-    };
-    const { variant, label } = config[status as keyof typeof config] || config.active;
-    return <Badge variant={variant}>{label}</Badge>;
+  const getStatusBadge = (enrollment: any) => {
+    const eventEnd = new Date(enrollment.events?.date || '').getTime() + ((enrollment.events?.duration || 0) * 60000);
+    const now = Date.now();
+    let dynamicStatus = "";
+    let badgeVariant: 'success' | 'error' | 'info' | 'default' = 'default';
+
+    if (enrollment.status === 'cancelled') {
+       dynamicStatus = "Cancelada";
+       badgeVariant = "error";
+    } else if (enrollment.status === 'used') {
+       dynamicStatus = "Completada";
+       badgeVariant = "info";
+    } else {
+      if (now < new Date(enrollment.events?.date || '').getTime()) {
+        dynamicStatus = "Próximo";
+        badgeVariant = "info";
+      } else if (now >= new Date(enrollment.events?.date || '').getTime() && now < eventEnd) {
+        dynamicStatus = "En vivo";
+        badgeVariant = "success";
+      } else {
+        dynamicStatus = "Finalizado";
+        badgeVariant = "error";
+      }
+    }
+    return <Badge variant={badgeVariant}>{dynamicStatus}</Badge>;
   };
 
   if (isLoading) {
@@ -138,7 +155,12 @@ export default function MyEnrollmentsPage() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-4">
-          {enrollments.map((enrollment) => (
+          {enrollments.map((enrollment) => {
+            const eventEnd = new Date(enrollment.events?.date || '').getTime() + ((enrollment.events?.duration || 0) * 60000);
+            const now = Date.now();
+            const isFinished = now >= eventEnd;
+
+            return (
             <Card key={enrollment.id}>
               <CardContent className="p-4 sm:p-6">
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
@@ -148,7 +170,7 @@ export default function MyEnrollmentsPage() {
                       <h3 className="text-base sm:text-lg font-semibold text-gray-900">
                         {enrollment.events?.title}
                       </h3>
-                      {getStatusBadge(enrollment.status)}
+                      {getStatusBadge(enrollment)}
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4">
@@ -229,14 +251,16 @@ export default function MyEnrollmentsPage() {
                           <XCircle className="w-4 h-4 mr-2" />
                           Cancelar
                         </Button>
-                        <VirtualRoomAccessButton
-                          event={{
-                            id: enrollment.event_id,
-                            modality: enrollment.events?.modality ?? 'virtual',
-                            location: enrollment.events?.location || ''
-                          }}
-                          className="flex-1 sm:flex-none"
-                        />
+                        {!isFinished && (
+                          <VirtualRoomAccessButton
+                            event={{
+                              id: enrollment.event_id,
+                              modality: enrollment.events?.modality ?? 'virtual',
+                              location: enrollment.events?.location || ''
+                            }}
+                            className="flex-1 sm:flex-none"
+                          />
+                        )}
                       </>
                     )}
                     {enrollment.status === 'used' && enrollment.events && (
@@ -258,7 +282,7 @@ export default function MyEnrollmentsPage() {
                 </div>
               </CardContent>
             </Card>
-          ))}
+          )})}
         </div>
       )}
 
