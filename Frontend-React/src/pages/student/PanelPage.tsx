@@ -17,7 +17,7 @@ export default function PanelPage() {
   const { data: certificatesData } = useMyCertificates();
 
   const upcomingEvents = enrollmentsData?.enrollments
-    .filter((e) => e.status === 'active' && e.events)
+    .filter((e) => e.status === 'active' && e.events && e.events.status === 'active')
     .slice(0, 3) || [];
 
   if (!eventsData || !enrollmentsData || !certificatesData) {

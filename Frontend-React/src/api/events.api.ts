@@ -62,4 +62,10 @@ export const eventsApi = {
     const response = await axiosInstance.patch<{ event: Event; message: string }>(`/events/${id}/status`, { status });
     return response.data;
   },
+
+  // Iniciar sala virtual (admin)
+  startVirtualRoom: async (id: string) => {
+    const response = await axiosInstance.post<{ event: Event; message: string }>(`/events/${id}/start`);
+    return response.data;
+  },
 };

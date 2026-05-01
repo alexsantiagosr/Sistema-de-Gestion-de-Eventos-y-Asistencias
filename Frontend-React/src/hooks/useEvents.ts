@@ -124,3 +124,19 @@ export function useUpdateEventStatus() {
     },
   });
 }
+
+/**
+ * Hook para iniciar una sala virtual (admin)
+ */
+export function useStartVirtualRoom() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => eventsApi.startVirtualRoom(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['events-available'] });
+      queryClient.invalidateQueries({ queryKey: ['event', id] });
+    },
+  });
+}

@@ -28,6 +28,7 @@ export interface Event {
   location: string | null;
   organized_by: string | null;
   status: EventStatus;
+  is_live: boolean;
   created_by: {
     id: string;
     name: string;

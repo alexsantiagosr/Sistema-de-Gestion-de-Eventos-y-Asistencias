@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, Search, Edit2, Eye, CheckCircle, Trash2 } from 'lucide-react';
+import { Plus, Search, Edit2, Eye, CheckCircle, Trash2, Play } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { useEvents, useDeleteEvent, useUpdateEventStatus } from '@/hooks/useEvents';
+import { useEvents, useDeleteEvent, useUpdateEventStatus, useStartVirtualRoom } from '@/hooks/useEvents';
 import { toast } from 'sonner';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
@@ -37,12 +37,11 @@ export default function ManageEventsPage() {
 
   const deleteMutation = useDeleteEvent();
   const updateStatusMutation = useUpdateEventStatus();
+  const startRoomMutation = useStartVirtualRoom();
 
-  // Filtrar por búsqueda y ocultar cancelados por defecto
+  // Filtrar por búsqueda
   const events = eventsData?.events.filter((event) => {
-    const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const hideCancelled = statusFilter !== 'cancelled' && event.status === 'cancelled';
-    return matchesSearch && !hideCancelled;
+    return event.title.toLowerCase().includes(searchTerm.toLowerCase());
   }) || [];
 
   const handleDelete = async () => {
@@ -77,6 +76,16 @@ export default function ManageEventsPage() {
       refetch();
     } catch {
       toast.error('Error al cambiar el estado del evento');
+    }
+  };
+
+  const handleStartVirtualRoom = async (eventId: string, eventTitle: string) => {
+    try {
+      await startRoomMutation.mutateAsync(eventId);
+      toast.success(`Sala iniciada para el evento "${eventTitle}"`);
+      navigate(`/events/${eventId}/virtual-room`);
+    } catch {
+      toast.error('Error al iniciar la sala virtual');
     }
   };
 
@@ -233,17 +242,36 @@ export default function ManageEventsPage() {
                           >
                             <Eye className="w-4 h-4" />
                           </Button>
-                          {event.status === 'active' && (
-                            <>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => navigate(`/admin/events/${event.id}/edit`)}
-                                className="hidden sm:inline-flex"
-                              >
-                                <Edit2 className="w-4 h-4" />
-                              </Button>
-                            </>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => navigate(`/admin/events/${event.id}/edit`)}
+                            className="hidden sm:inline-flex"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </Button>
+                          {event.status === 'active' && (event.modality === 'virtual' || event.modality === 'híbrido' || event.modality === ('hibrido' as any)) && !event.is_live && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleStartVirtualRoom(event.id, event.title)}
+                              className="hidden sm:inline-flex text-green-600 hover:bg-green-50"
+                              title="Iniciar sala virtual"
+                              disabled={startRoomMutation.isPending}
+                            >
+                              <Play className="w-4 h-4" />
+                            </Button>
+                          )}
+                          {event.is_live && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => navigate(`/events/${event.id}/virtual-room`)}
+                              className="hidden sm:inline-flex text-blue-600 hover:bg-blue-50"
+                              title="Ir a sala virtual"
+                            >
+                              <Play className="w-4 h-4" />
+                            </Button>
                           )}
                           <Button
                             variant="ghost"

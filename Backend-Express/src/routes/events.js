@@ -47,4 +47,10 @@ router.patch('/:id/status',
   EventController.updateStatus
 );
 
+router.post('/:id/start',
+  authMiddleware.authenticate,
+  authMiddleware.requireRole('admin'),
+  EventController.startVirtualRoom
+);
+
 module.exports = router;

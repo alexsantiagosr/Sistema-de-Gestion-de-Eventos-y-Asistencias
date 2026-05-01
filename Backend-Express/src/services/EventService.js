@@ -43,7 +43,7 @@ const EventService = {
    * @param {string} eventId
    * @returns {{ access: true }}
    */
-  async checkStudentVirtualAccess(userId, eventId) {
+  async checkStudentVirtualAccess(userId, eventId, userRole) {
     if (process.env.ALLOW_TEST_ACCESS === 'true') {
       return { access: true, testMode: true };
     }
@@ -55,9 +55,19 @@ const EventService = {
       throw err;
     }
 
+    if (userRole === 'admin') {
+      return { access: true };
+    }
+
     if (event.status !== 'active') {
       const err = new Error('El evento no está activo');
       err.code = 'EVENT_NOT_ACTIVE';
+      throw err;
+    }
+
+    if (!event.is_live) {
+      const err = new Error('La sala aún no ha sido iniciada por el organizador');
+      err.code = 'ROOM_NOT_LIVE';
       throw err;
     }
 
@@ -248,6 +258,20 @@ const EventService = {
     }
 
     return await EventModel.update(id, { status });
+  },
+
+  /**
+   * Iniciar sala virtual (solo admin)
+   * @param {string} id - UUID del evento
+   */
+  async startVirtualRoom(id) {
+    const event = await this.getEventById(id);
+    if (event.status !== 'active') {
+      const error = new Error('Solo se pueden iniciar eventos activos');
+      error.code = 'EVENT_NOT_ACTIVE';
+      throw error;
+    }
+    return await EventModel.update(id, { is_live: true });
   }
 };
 

@@ -135,7 +135,6 @@ export default function EventsPage() {
               (enrollment) => enrollment.event_id === event.id && enrollment.status === 'active'
             );
 
-            const eventEnd = new Date(event.date).getTime() + (event.duration * 60000);
             const now = Date.now();
 
             let displayStatus = "";
@@ -146,10 +145,8 @@ export default function EventsPage() {
             } else {
               if (now < new Date(event.date).getTime()) {
                 displayStatus = "Próximo";
-              } else if (now >= new Date(event.date).getTime() && now < eventEnd) {
-                displayStatus = "En vivo";
               } else {
-                displayStatus = "Finalizado";
+                displayStatus = "En vivo";
               }
             }
 
@@ -239,12 +236,12 @@ export default function EventsPage() {
                       Ver detalle
                     </Button>
                   </Link>
-                  {isStudent && isActive && displayStatus !== "Finalizado" && (
+                  {isStudent && isActive && (
                     <div className="mb-2">
                       <VirtualRoomAccessButton event={event} fullWidth />
                     </div>
                   )}
-                  {isStudent && isActive && displayStatus !== "Finalizado" ? (
+                  {isStudent && isActive ? (
                     !isEnrolled ? (
                       <Button
                         className="w-full"

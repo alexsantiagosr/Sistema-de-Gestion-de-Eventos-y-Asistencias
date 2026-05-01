@@ -3,7 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { enrollmentsApi } from '@/api/enrollments.api';
 import { useMyEnrollments } from '@/hooks/useEnrollments';
-import { useVirtualAccess } from '@/hooks/useEvents';
+import { useVirtualAccess, useEvent } from '@/hooks/useEvents';
+import { useAuth } from '@/context/AuthContext';
 import Button from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import Spinner from '@/components/ui/Spinner';
@@ -15,14 +16,20 @@ import Spinner from '@/components/ui/Spinner';
 export default function VirtualRoomPage() {
   const { id: eventId } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { data: myEnrollments } = useMyEnrollments();
-  const { data: eventData } = useVirtualAccess(eventId || '', !!eventId);
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
 
-  // Obtener el evento de las inscripciones del usuario
+  const { data: myEnrollments } = useMyEnrollments();
+  // Fetch event details for admin, since admin might not be enrolled
+  const { data: eventDetailsData } = useEvent(eventId || '');
+  useVirtualAccess(eventId || '', !!eventId);
+
+  // Obtener el evento
   const currentEnrollment = myEnrollments?.enrollments.find(
     (e) => e.event_id === eventId && e.status === 'active'
   );
-  const eventInfo = currentEnrollment?.events;
+  
+  const eventInfo = isAdmin ? eventDetailsData?.event : currentEnrollment?.events;
 
   // Variables para control de tiempo activo (HU-07)
   const accumulatedSeconds = useRef(0); // Segundos acumulados pendientes por enviar
@@ -120,35 +127,22 @@ export default function VirtualRoomPage() {
     };
   }, [eventId]);
 
-  // Detección robusta de cambio de pestaña (blur, focus, visibilitychange)
+  // Detección robusta de cambio de pestaña (solo visibilitychange)
   useEffect(() => {
-    const handleHidden = () => {
-      setTabSwitchCount((prev) => prev + 1);
-    };
-
-    const handleVisible = () => {
-      setShowWarning(true);
-
-      setTimeout(() => {
-        setShowWarning(false);
-      }, 4000);
-    };
-
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
-        handleHidden();
+        setTabSwitchCount((prev) => prev + 1);
       } else {
-        handleVisible();
+        setShowWarning(true);
+        setTimeout(() => {
+          setShowWarning(false);
+        }, 4000);
       }
     };
 
-    window.addEventListener('blur', handleHidden);
-    window.addEventListener('focus', handleVisible);
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
-      window.removeEventListener('blur', handleHidden);
-      window.removeEventListener('focus', handleVisible);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
@@ -169,12 +163,12 @@ export default function VirtualRoomPage() {
 
     const interval = setInterval(() => {
       const currentNow = Date.now();
-      const remaining = eventEnd - currentNow;
+      const remaining = Math.max(0, eventEnd - currentNow);
 
       if (currentNow >= eventEnd) {
         setShowEndModal(true);
       } else {
-        setRemainingTime(remaining > 0 ? remaining : 0);
+        setRemainingTime(remaining);
       }
     }, 1000);
 
@@ -234,10 +228,16 @@ export default function VirtualRoomPage() {
     );
   }
 
-  if (!currentEnrollment || !eventData) {
+  if (!isAdmin && !currentEnrollment) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Spinner />
+        <Card className="w-full max-w-md">
+          <div className="text-center">
+            <p className="text-error mb-4 font-semibold text-lg">No tienes acceso a este evento</p>
+            <p className="text-secondary mb-6">Debes estar inscrito para acceder a la sala virtual.</p>
+            <Button onClick={() => navigate('/events')}>Volver a eventos</Button>
+          </div>
+        </Card>
       </div>
     );
   }
@@ -245,9 +245,21 @@ export default function VirtualRoomPage() {
   if (!eventInfo) {
     return (
       <div className="min-h-screen flex items-center justify-center">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (!eventInfo.is_live && !isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
         <Card className="w-full max-w-md">
           <div className="text-center">
-            <p className="text-secondary mb-4">No tienes acceso a este evento</p>
+            <div className="bg-yellow-100 text-yellow-600 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 text-3xl">
+              ⏳
+            </div>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Sala no iniciada</h2>
+            <p className="text-secondary mb-6">La sala aún no ha sido iniciada por el organizador. Por favor, espera unos minutos.</p>
             <Button onClick={() => navigate('/events')}>Volver a eventos</Button>
           </div>
         </Card>

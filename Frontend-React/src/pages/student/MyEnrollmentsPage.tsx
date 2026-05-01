@@ -105,8 +105,6 @@ export default function MyEnrollmentsPage() {
   };
 
   const getStatusBadge = (enrollment: any) => {
-    const eventEnd = new Date(enrollment.events?.date || '').getTime() + ((enrollment.events?.duration || 0) * 60000);
-    const now = Date.now();
     let dynamicStatus = "";
     let badgeVariant: 'success' | 'error' | 'info' | 'default' = 'default';
 
@@ -117,15 +115,23 @@ export default function MyEnrollmentsPage() {
        dynamicStatus = "Completada";
        badgeVariant = "info";
     } else {
-      if (now < new Date(enrollment.events?.date || '').getTime()) {
-        dynamicStatus = "Próximo";
-        badgeVariant = "info";
-      } else if (now >= new Date(enrollment.events?.date || '').getTime() && now < eventEnd) {
-        dynamicStatus = "En vivo";
-        badgeVariant = "success";
-      } else {
+      const eventStatus = enrollment.events?.status;
+      const now = Date.now();
+      
+      if (eventStatus === 'cancelled') {
+        dynamicStatus = "Cancelado";
+        badgeVariant = "error";
+      } else if (eventStatus === 'finished' || eventStatus === 'completed') {
         dynamicStatus = "Finalizado";
         badgeVariant = "error";
+      } else {
+        if (now < new Date(enrollment.events?.date || '').getTime()) {
+          dynamicStatus = "Próximo";
+          badgeVariant = "info";
+        } else {
+          dynamicStatus = "En vivo";
+          badgeVariant = "success";
+        }
       }
     }
     return <Badge variant={badgeVariant}>{dynamicStatus}</Badge>;

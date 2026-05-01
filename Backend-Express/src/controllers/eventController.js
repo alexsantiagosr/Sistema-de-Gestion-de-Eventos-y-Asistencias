@@ -81,8 +81,9 @@ const EventController = {
     try {
       const { eventId } = req.params;
       const userId = req.user.id;
+      const userRole = req.user.role;
 
-      const result = await EventService.checkStudentVirtualAccess(userId, eventId);
+      const result = await EventService.checkStudentVirtualAccess(userId, eventId, userRole);
 
       res.json(result);
     } catch (error) {
@@ -98,7 +99,8 @@ const EventController = {
           'ENROLLMENT_NOT_ACTIVE',
           'INVALID_MODALITY_FOR_VIRTUAL',
           'OUTSIDE_EVENT_WINDOW',
-          'EVENT_NOT_ACTIVE'
+          'EVENT_NOT_ACTIVE',
+          'ROOM_NOT_LIVE'
         ].includes(error.code)
       ) {
         return res.status(403).json({
@@ -226,6 +228,35 @@ const EventController = {
       if (error.code === 'INVALID_STATUS') {
         return res.status(400).json({
           error: 'Datos inválidos',
+          message: error.message
+        });
+      }
+      next(error);
+    }
+  },
+
+  /**
+   * POST /api/events/:id/start
+   * Iniciar sala virtual (solo admin)
+   */
+  async startVirtualRoom(req, res, next) {
+    try {
+      const { id } = req.params;
+      const event = await EventService.startVirtualRoom(id);
+      res.json({
+        message: 'Sala iniciada exitosamente',
+        event
+      });
+    } catch (error) {
+      if (error.code === 'NOT_FOUND') {
+        return res.status(404).json({
+          error: 'No encontrado',
+          message: error.message
+        });
+      }
+      if (error.code === 'EVENT_NOT_ACTIVE') {
+        return res.status(400).json({
+          error: 'Acción no permitida',
           message: error.message
         });
       }

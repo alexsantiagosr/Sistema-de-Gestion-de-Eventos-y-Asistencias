@@ -32,7 +32,6 @@ export default function EventDetailPage() {
   let displayStatus = "";
   let isActive = false;
   if (event) {
-    const eventEnd = new Date(event.date).getTime() + (event.duration * 60000);
     const now = Date.now();
     isActive = event.status === 'active';
 
@@ -43,10 +42,8 @@ export default function EventDetailPage() {
     } else {
       if (now < new Date(event.date).getTime()) {
         displayStatus = "Próximo";
-      } else if (now >= new Date(event.date).getTime() && now < eventEnd) {
-        displayStatus = "En vivo";
       } else {
-        displayStatus = "Finalizado";
+        displayStatus = "En vivo";
       }
     }
   }
@@ -225,7 +222,7 @@ export default function EventDetailPage() {
               )}
             </div>
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:space-x-4 sm:gap-0">
-              {isStudent && isActive && displayStatus !== "Finalizado" && (
+              {isStudent && isActive && (
                 <>
                   {!isEnrolled && !isCancelled && (
                     <Button
@@ -253,7 +250,7 @@ export default function EventDetailPage() {
                   <VirtualRoomAccessButton event={event} />
                 </>
               )}
-              {(!isStudent || (!isActive && displayStatus !== "Cancelado") || displayStatus === "Finalizado") && (
+              {(!isStudent || !isActive) && (
                 <span className="text-sm text-gray-400 italic px-3 py-2 block text-center">
                   {!isStudent ? 'Vista de solo lectura (Admin)' : 'Evento no disponible'}
                 </span>
