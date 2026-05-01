@@ -1,4 +1,4 @@
-import { FileText, Download, CheckCircle, XCircle } from 'lucide-react';
+import { FileText, Download, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { useMyCertificates } from '@/hooks/useCertificates';
 import { toast } from 'sonner';
 import Badge from '@/components/ui/Badge';
@@ -6,10 +6,24 @@ import Button from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import Spinner from '@/components/ui/Spinner';
 import { certificatesApi } from '@/api/certificates.api';
+import { useAuth } from '@/context/AuthContext';
 
 export default function CertificatesPage() {
   const { data: certificatesData, isLoading } = useMyCertificates();
   const certificates = certificatesData?.certificates || [];
+  const { user } = useAuth();
+
+  if (user?.role === 'admin') {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <AlertCircle className="w-12 h-12 text-error mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Acceso denegado</h3>
+          <p className="text-secondary">Solo los estudiantes pueden acceder a esta sección.</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleDownloadCertificate = async (eventId: string, eventTitle: string) => {
     try {

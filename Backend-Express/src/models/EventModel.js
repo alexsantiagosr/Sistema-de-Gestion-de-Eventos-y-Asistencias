@@ -181,6 +181,21 @@ const EventModel = {
 
     if (error) throw error;
     return data || [];
+  },
+
+  /**
+   * Actualiza automáticamente a 'finished' los eventos activos que ya terminaron
+   * @returns {Promise<number>} Número de eventos actualizados
+   */
+  async autoFinishEvents() {
+    const { data, error } = await supabaseAdmin.rpc('auto_finish_events');
+    
+    if (error) {
+      console.error('Error auto-finishing events:', error);
+      throw error;
+    }
+    
+    return data || 0;
   }
 };
 

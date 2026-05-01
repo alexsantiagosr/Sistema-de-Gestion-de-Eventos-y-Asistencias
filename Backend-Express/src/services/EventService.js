@@ -55,6 +55,12 @@ const EventService = {
       throw err;
     }
 
+    if (event.status !== 'active') {
+      const err = new Error('El evento no está activo');
+      err.code = 'EVENT_NOT_ACTIVE';
+      throw err;
+    }
+
     if (!this._isVirtualOrHybridModality(event.modality)) {
       const err = new Error('El acceso a la sala solo aplica a eventos virtuales o híbridos');
       err.code = 'INVALID_MODALITY_FOR_VIRTUAL';
@@ -234,7 +240,7 @@ const EventService = {
    * @param {string} status - Nuevo estado (active|completed|cancelled)
    */
   async updateEventStatus(id, status) {
-    const validStatus = ['active', 'completed', 'cancelled'];
+    const validStatus = ['active', 'finished', 'cancelled'];
     if (!validStatus.includes(status)) {
       const error = new Error(`Estado inválido. Debe ser: ${validStatus.join(', ')}`);
       error.code = 'INVALID_STATUS';

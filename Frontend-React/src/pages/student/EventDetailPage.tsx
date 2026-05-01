@@ -1,9 +1,8 @@
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Calendar, MapPin, Clock, Users, CheckCircle, XCircle, Building2 } from 'lucide-react';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 import { useEvent } from '@/hooks/useEvents';
 import { useEnroll, useMyEnrollments } from '@/hooks/useEnrollments';
+import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
@@ -14,6 +13,8 @@ import VirtualRoomAccessButton from '@/components/student/VirtualRoomAccessButto
 export default function EventDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isStudent = user?.role === 'student';
 
   const { data: eventData, isLoading } = useEvent(id!);
   const enrollMutation = useEnroll();
@@ -27,6 +28,28 @@ export default function EventDetailPage() {
   );
   const isEnrolled = currentEnrollment?.status === 'active';
   const isCancelled = currentEnrollment?.status === 'cancelled';
+
+  let displayStatus = "";
+  let isActive = false;
+  if (event) {
+    const eventEnd = new Date(event.date).getTime() + (event.duration * 60000);
+    const now = Date.now();
+    isActive = event.status === 'active';
+
+    if (event.status === 'completed' || event.status === ('finished' as any)) {
+      displayStatus = "Finalizado";
+    } else if (event.status === 'cancelled') {
+      displayStatus = "Cancelado";
+    } else {
+      if (now < new Date(event.date).getTime()) {
+        displayStatus = "Próximo";
+      } else if (now >= new Date(event.date).getTime() && now < eventEnd) {
+        displayStatus = "En vivo";
+      } else {
+        displayStatus = "Finalizado";
+      }
+    }
+  }
 
   if (isLoading) {
     return (
@@ -101,7 +124,16 @@ export default function EventDetailPage() {
         <h1 className="text-3xl font-bold text-white mb-4">{event.title}</h1>
         <div className="flex items-center text-white/90">
           <Calendar className="w-5 h-5 mr-2" />
-          {format(new Date(event.date), "EEEE, dd 'de' MMMM, yyyy", { locale: es })}
+          {new Date(event.date).toLocaleString('es-CO', {
+            timeZone: 'America/Bogota',
+            dateStyle: 'full',
+            timeStyle: 'short'
+          })}
+        </div>
+        
+        {/* Dynamic Status Badge */}
+        <div className="mt-4 inline-block px-3 py-1 rounded-full text-sm font-medium bg-white/20 text-white backdrop-blur-sm">
+          {displayStatus}
         </div>
       </div>
 
@@ -193,30 +225,39 @@ export default function EventDetailPage() {
               )}
             </div>
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:space-x-4 sm:gap-0">
-              {!isEnrolled && !isCancelled && (
-                <Button
-                  disabled={event.available_slots === 0 || enrollMutation.isPending}
-                  onClick={handleEnroll}
-                  isLoading={enrollMutation.isPending}
-                >
-                  {event.available_slots === 0 ? 'Sin cupos' : 'Inscribirme al evento'}
-                </Button>
+              {isStudent && isActive && displayStatus !== "Finalizado" && (
+                <>
+                  {!isEnrolled && !isCancelled && (
+                    <Button
+                      disabled={event.available_slots === 0 || enrollMutation.isPending}
+                      onClick={handleEnroll}
+                      isLoading={enrollMutation.isPending}
+                    >
+                      {event.available_slots === 0 ? 'Sin cupos' : 'Inscribirme al evento'}
+                    </Button>
+                  )}
+                  {isCancelled && (
+                    <Button
+                      disabled={event.available_slots === 0 || enrollMutation.isPending}
+                      onClick={handleEnroll}
+                      isLoading={enrollMutation.isPending}
+                    >
+                      {event.available_slots === 0 ? 'Sin cupos' : 'Reinscribirme'}
+                    </Button>
+                  )}
+                  {isEnrolled && (
+                    <Link to="/my-enrollments">
+                      <Button>Ver mi inscripción</Button>
+                    </Link>
+                  )}
+                  <VirtualRoomAccessButton event={event} />
+                </>
               )}
-              {isCancelled && (
-                <Button
-                  disabled={event.available_slots === 0 || enrollMutation.isPending}
-                  onClick={handleEnroll}
-                  isLoading={enrollMutation.isPending}
-                >
-                  {event.available_slots === 0 ? 'Sin cupos' : 'Reinscribirme'}
-                </Button>
+              {(!isStudent || (!isActive && displayStatus !== "Cancelado") || displayStatus === "Finalizado") && (
+                <span className="text-sm text-gray-400 italic px-3 py-2 block text-center">
+                  {!isStudent ? 'Vista de solo lectura (Admin)' : 'Evento no disponible'}
+                </span>
               )}
-              {isEnrolled && (
-                <Link to="/my-enrollments">
-                  <Button>Ver mi inscripción</Button>
-                </Link>
-              )}
-              <VirtualRoomAccessButton event={event} />
             </div>
           </div>
         </CardContent>

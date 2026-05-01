@@ -8,11 +8,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import Spinner from '@/components/ui/Spinner';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 
 export default function PanelPage() {
   const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const { data: eventsData } = useAvailableEvents();
   const { data: enrollmentsData } = useMyEnrollments();
   const { data: certificatesData } = useMyCertificates();
@@ -68,8 +67,18 @@ export default function PanelPage() {
         </p>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-6 lg:mb-8">
+      {/* Admin Warning */}
+      {isAdmin && (
+        <div className="bg-blue-50 text-blue-800 p-4 rounded-xl border border-blue-200 mb-6">
+          <p className="font-medium">Modo Administrador</p>
+          <p className="text-sm mt-1">Este es el panel principal. Por favor, usa el menú lateral para acceder a las herramientas de administración.</p>
+        </div>
+      )}
+
+      {!isAdmin && (
+        <>
+          {/* Stats */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-6 lg:mb-8">
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
@@ -133,11 +142,10 @@ export default function PanelPage() {
                     </h4>
                     <div className="flex items-center text-xs sm:text-sm text-secondary mt-1">
                       <Calendar className="w-4 h-4 mr-2" />
-                      {format(
-                        new Date(enrollment.events?.date || ''),
-                        "dd 'de' MMMM, yyyy",
-                        { locale: es }
-                      )}
+                      {new Date(enrollment.events?.date || '').toLocaleString('es-CO', {
+                        timeZone: 'America/Bogota',
+                        dateStyle: 'long'
+                      })}
                     </div>
                   </div>
                   <div className="flex items-center gap-2 sm:gap-3">
@@ -192,6 +200,8 @@ export default function PanelPage() {
           </div>
         </CardContent>
       </Card>
+        </>
+      )}
     </div>
   );
 }

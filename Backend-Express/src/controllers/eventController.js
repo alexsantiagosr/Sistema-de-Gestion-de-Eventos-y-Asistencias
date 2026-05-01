@@ -1,4 +1,5 @@
 const EventService = require('../services/EventService');
+const EventModel = require('../models/EventModel');
 
 /**
  * Controlador de Eventos
@@ -11,6 +12,9 @@ const EventController = {
    */
   async index(req, res, next) {
     try {
+      // Auto-finalizar eventos vencidos (lazy update)
+      await EventModel.autoFinishEvents();
+
       const { status, modality } = req.query;
 
       const filters = {};
@@ -34,6 +38,9 @@ const EventController = {
    */
   async available(req, res, next) {
     try {
+      // Auto-finalizar eventos vencidos (lazy update)
+      await EventModel.autoFinishEvents();
+
       const events = await EventService.getAvailableEvents();
 
       res.json({
@@ -90,7 +97,8 @@ const EventController = {
           'NOT_ENROLLED',
           'ENROLLMENT_NOT_ACTIVE',
           'INVALID_MODALITY_FOR_VIRTUAL',
-          'OUTSIDE_EVENT_WINDOW'
+          'OUTSIDE_EVENT_WINDOW',
+          'EVENT_NOT_ACTIVE'
         ].includes(error.code)
       ) {
         return res.status(403).json({

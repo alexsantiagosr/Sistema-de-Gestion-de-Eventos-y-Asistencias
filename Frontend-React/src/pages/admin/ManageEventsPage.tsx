@@ -50,10 +50,10 @@ export default function ManageEventsPage() {
 
     try {
       await deleteMutation.mutateAsync(eventToDelete.id);
-      toast.success(`Evento "${eventToDelete.title}" eliminado correctamente`);
+      toast.success(`Evento "${eventToDelete.title}" cancelado correctamente`);
       setEventToDelete(null);
     } catch {
-      toast.error('Error al eliminar el evento');
+      toast.error('Error al cancelar el evento');
     }
   };
 
@@ -264,15 +264,15 @@ export default function ManageEventsPage() {
         </CardContent>
       </Card>
 
-      {/* Delete Confirmation Dialog */}
+      {/* Cancel Confirmation Dialog (using DELETE endpoint logically) */}
       <ConfirmDialog
         isOpen={!!eventToDelete}
         onClose={() => setEventToDelete(null)}
         onConfirm={handleDelete}
-        title="Eliminar evento"
-        message={`¿Estás seguro de que deseas eliminar el evento "${eventToDelete?.title}"? Esta acción no se puede deshacer.`}
-        confirmText="Eliminar"
-        cancelText="Cancelar"
+        title="Cancelar evento"
+        message={`¿Estás seguro de que deseas cancelar el evento "${eventToDelete?.title}"? Esta acción no se puede deshacer y los usuarios inscritos serán notificados.`}
+        confirmText="Sí, cancelar"
+        cancelText="Volver"
         variant="danger"
         isLoading={deleteMutation.isPending}
       />

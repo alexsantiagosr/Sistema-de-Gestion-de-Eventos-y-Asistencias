@@ -18,13 +18,17 @@ const EnrollmentController = {
 
       res.status(201).json(result);
     } catch (error) {
-      if (['EVENT_NOT_FOUND', 'EVENT_NOT_ACTIVE', 'NO_AVAILABLE_SLOTS', 'ALREADY_ENROLLED'].includes(error.code)) {
-        return res.status(400).json({
-          error: 'No se puede realizar la inscripción',
-          message: error.message
-        });
-      }
-      next(error);
+      console.error("Error en inscripción:", error);
+      
+      if (error.code === 'EVENT_NOT_FOUND') return res.status(404).json({ message: error.message });
+      if (error.code === 'EVENT_NOT_ACTIVE') return res.status(403).json({ message: "El evento no está disponible" });
+      if (error.code === 'ALREADY_ENROLLED') return res.status(409).json({ message: error.message });
+      if (error.code === 'NO_AVAILABLE_SLOTS') return res.status(400).json({ message: error.message });
+
+      return res.status(500).json({
+        message: "Error interno del servidor",
+        error: error.message
+      });
     }
   },
 

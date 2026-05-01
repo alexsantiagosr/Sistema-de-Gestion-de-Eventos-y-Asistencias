@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, MapPin, Clock, Users, Search } from 'lucide-react';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 import { useEvents } from '@/hooks/useEvents';
 import { useEnroll, useMyEnrollments } from '@/hooks/useEnrollments';
 import { useAuth } from '@/context/AuthContext';
@@ -16,7 +14,7 @@ import VirtualRoomAccessButton from '@/components/student/VirtualRoomAccessButto
 
 export default function EventsPage() {
   const { user } = useAuth();
-  const isAdmin = user?.role === 'admin';
+  const isStudent = user?.role === 'student';
 
   const [searchTerm, setSearchTerm] = useState('');
   const [modalityFilter, setModalityFilter] = useState<string>('');
@@ -140,14 +138,22 @@ export default function EventsPage() {
             const eventEnd = new Date(event.date).getTime() + (event.duration * 60000);
             const now = Date.now();
 
-            let status = "";
-            if (now < new Date(event.date).getTime()) {
-              status = "Próximo";
-            } else if (now >= new Date(event.date).getTime() && now < eventEnd) {
-              status = "En vivo";
+            let displayStatus = "";
+            if (event.status === 'completed' || event.status === ('finished' as any)) {
+              displayStatus = "Finalizado";
+            } else if (event.status === 'cancelled') {
+              displayStatus = "Cancelado";
             } else {
-              status = "Finalizado";
+              if (now < new Date(event.date).getTime()) {
+                displayStatus = "Próximo";
+              } else if (now >= new Date(event.date).getTime() && now < eventEnd) {
+                displayStatus = "En vivo";
+              } else {
+                displayStatus = "Finalizado";
+              }
             }
+
+            const isActive = event.status === 'active';
 
             return (
               <Card key={event.id} className="flex flex-col">
@@ -169,10 +175,17 @@ export default function EventsPage() {
               </div>
 
               <CardContent className="flex-1 flex flex-col p-4 sm:p-6">
-                {status === "Finalizado" && (
+                {displayStatus === "Finalizado" && (
                   <div className="mb-3">
                     <span className="text-red-500 text-sm font-medium">
                       Finalizado
+                    </span>
+                  </div>
+                )}
+                {displayStatus === "Cancelado" && (
+                  <div className="mb-3">
+                    <span className="text-red-500 text-sm font-medium">
+                      Cancelado
                     </span>
                   </div>
                 )}
@@ -180,7 +193,11 @@ export default function EventsPage() {
                 <div className="space-y-2 sm:space-y-3 flex-1">
                   <div className="flex items-center text-xs sm:text-sm text-secondary">
                     <Calendar className="w-4 h-4 mr-2" />
-                    {format(new Date(event.date), "dd 'de' MMMM, yyyy", { locale: es })}
+                    {new Date(event.date).toLocaleString('es-CO', {
+                      timeZone: 'America/Bogota',
+                      dateStyle: 'long',
+                      timeStyle: 'short'
+                    })}
                   </div>
                   <div className="flex items-center text-xs sm:text-sm text-secondary">
                     <Clock className="w-4 h-4 mr-2" />
@@ -222,12 +239,12 @@ export default function EventsPage() {
                       Ver detalle
                     </Button>
                   </Link>
-                  {status !== "Finalizado" && !isAdmin && (
+                  {isStudent && isActive && displayStatus !== "Finalizado" && (
                     <div className="mb-2">
                       <VirtualRoomAccessButton event={event} fullWidth />
                     </div>
                   )}
-                  {status !== "Finalizado" && !isAdmin ? (
+                  {isStudent && isActive && displayStatus !== "Finalizado" ? (
                     !isEnrolled ? (
                       <Button
                         className="w-full"
@@ -248,7 +265,7 @@ export default function EventsPage() {
                     ) : null
                   ) : (
                     <span className="text-sm text-gray-400 italic px-3 py-2 block text-center">
-                      {isAdmin ? 'Solo lectura' : 'Evento no disponible'}
+                      {!isStudent ? 'Solo lectura' : 'Evento no disponible'}
                     </span>
                   )}
                 </div>

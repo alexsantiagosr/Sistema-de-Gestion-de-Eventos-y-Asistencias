@@ -10,8 +10,6 @@ import {
   CheckCircle,
   AlertCircle
 } from 'lucide-react';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 import { useMyEnrollments, useCancelEnrollment } from '@/hooks/useEnrollments';
 import { useDownloadCertificate } from '@/hooks/useCertificates';
 import { toast } from 'sonner';
@@ -24,6 +22,7 @@ import VirtualRoomAccessButton from '@/components/student/VirtualRoomAccessButto
 import Spinner from '@/components/ui/Spinner';
 import { qrApi } from '@/api/qr.api';
 import { certificatesApi } from '@/api/certificates.api';
+import { useAuth } from '@/context/AuthContext';
 
 export default function MyEnrollmentsPage() {
   const [selectedEnrollment, setSelectedEnrollment] = useState<{
@@ -40,6 +39,19 @@ export default function MyEnrollmentsPage() {
   const { data: enrollmentsData, isLoading, refetch } = useMyEnrollments();
   const cancelMutation = useCancelEnrollment();
   const downloadCertMutation = useDownloadCertificate();
+  const { user } = useAuth();
+
+  if (user?.role === 'admin') {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <AlertCircle className="w-12 h-12 text-error mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Acceso denegado</h3>
+          <p className="text-secondary">Solo los estudiantes pueden acceder a esta sección.</p>
+        </div>
+      </div>
+    );
+  }
 
   const enrollments = enrollmentsData?.enrollments || [];
 
@@ -156,9 +168,7 @@ export default function MyEnrollmentsPage() {
       ) : (
         <div className="grid grid-cols-1 gap-4">
           {enrollments.map((enrollment) => {
-            const eventEnd = new Date(enrollment.events?.date || '').getTime() + ((enrollment.events?.duration || 0) * 60000);
-            const now = Date.now();
-            const isFinished = now >= eventEnd;
+            const isActive = enrollment.events?.status === 'active';
 
             return (
             <Card key={enrollment.id}>
@@ -176,11 +186,11 @@ export default function MyEnrollmentsPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4">
                       <div className="flex items-center text-xs sm:text-sm text-secondary">
                         <Calendar className="w-4 h-4 mr-2" />
-                        {format(
-                          new Date(enrollment.events?.date || ''),
-                          "dd 'de' MMMM, yyyy",
-                          { locale: es }
-                        )}
+                        {new Date(enrollment.events?.date || '').toLocaleString('es-CO', {
+                          timeZone: 'America/Bogota',
+                          dateStyle: 'long',
+                          timeStyle: 'short'
+                        })}
                       </div>
                       <div className="flex items-center text-xs sm:text-sm text-secondary">
                         <Clock className="w-4 h-4 mr-2" />
@@ -201,13 +211,13 @@ export default function MyEnrollmentsPage() {
                           {enrollment.check_in && (
                             <span className="text-success flex items-center">
                               <CheckCircle className="w-4 h-4 inline mr-1" />
-                              Check-in: {format(new Date(enrollment.check_in), 'HH:mm')}
+                              Check-in: {new Date(enrollment.check_in).toLocaleString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit' })}
                             </span>
                           )}
                           {enrollment.check_out && (
                             <span className="text-success flex items-center">
                               <CheckCircle className="w-4 h-4 inline mr-1" />
-                              Check-out: {format(new Date(enrollment.check_out), 'HH:mm')}
+                              Check-out: {new Date(enrollment.check_out).toLocaleString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit' })}
                             </span>
                           )}
                         </div>
@@ -251,7 +261,7 @@ export default function MyEnrollmentsPage() {
                           <XCircle className="w-4 h-4 mr-2" />
                           Cancelar
                         </Button>
-                        {!isFinished && (
+                        {isActive && (
                           <VirtualRoomAccessButton
                             event={{
                               id: enrollment.event_id,
