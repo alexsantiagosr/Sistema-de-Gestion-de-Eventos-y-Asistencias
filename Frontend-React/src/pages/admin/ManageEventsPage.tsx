@@ -231,7 +231,7 @@ export default function ManageEventsPage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => navigate(`/admin/events/${event.id}/attendance`)}
-                            className="hidden xs:inline-flex"
+                            className="inline-flex"
                           >
                             <CheckCircle className="w-4 h-4" />
                           </Button>
@@ -239,6 +239,7 @@ export default function ManageEventsPage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => navigate(`/admin/events/${event.id}`)}
+                            className="inline-flex"
                           >
                             <Eye className="w-4 h-4" />
                           </Button>
@@ -246,7 +247,7 @@ export default function ManageEventsPage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => navigate(`/admin/events/${event.id}/edit`)}
-                            className="hidden sm:inline-flex"
+                            className="inline-flex"
                           >
                             <Edit2 className="w-4 h-4" />
                           </Button>
@@ -255,7 +256,7 @@ export default function ManageEventsPage() {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleStartVirtualRoom(event.id, event.title)}
-                              className="hidden sm:inline-flex text-green-600 hover:bg-green-50"
+                              className="inline-flex text-green-600 hover:bg-green-50"
                               title="Iniciar sala virtual"
                               disabled={startRoomMutation.isPending}
                             >
@@ -267,7 +268,7 @@ export default function ManageEventsPage() {
                               variant="ghost"
                               size="sm"
                               onClick={() => navigate(`/events/${event.id}/virtual-room`)}
-                              className="hidden sm:inline-flex text-blue-600 hover:bg-blue-50"
+                              className="inline-flex text-blue-600 hover:bg-blue-50"
                               title="Ir a sala virtual"
                             >
                               <Play className="w-4 h-4" />
@@ -277,7 +278,7 @@ export default function ManageEventsPage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => setEventToDelete({ id: event.id, title: event.title })}
-                            className="hidden sm:inline-flex text-error hover:bg-error/10"
+                            className="inline-flex text-error hover:bg-error/10"
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>

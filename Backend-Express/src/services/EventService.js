@@ -65,11 +65,9 @@ const EventService = {
       throw err;
     }
 
-    if (!event.is_live) {
-      const err = new Error('La sala aún no ha sido iniciada por el organizador');
-      err.code = 'ROOM_NOT_LIVE';
-      throw err;
-    }
+    // Se remueve la validación restrictiva de !is_live aquí.
+    // El frontend (VirtualRoomPage) se encargará de mostrar la "Sala de espera"
+    // si el evento aún no ha sido iniciado por el host.
 
     if (!this._isVirtualOrHybridModality(event.modality)) {
       const err = new Error('El acceso a la sala solo aplica a eventos virtuales o híbridos');
