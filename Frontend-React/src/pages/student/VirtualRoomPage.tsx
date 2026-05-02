@@ -49,9 +49,9 @@ export default function VirtualRoomPage() {
     navigate('/events');
   };
 
-  // Control de tiempo activo (HU-07)
+  // Control de tiempo activo (HU-07) - Solo para estudiantes
   useEffect(() => {
-    if (!eventId) return;
+    if (!eventId || isAdmin) return;
 
     let intervalId: NodeJS.Timeout | null = null;
 
@@ -175,13 +175,15 @@ export default function VirtualRoomPage() {
     return () => clearInterval(interval);
   }, [eventInfo]);
 
-  // Check-in automático al montar el componente
+  // Check-in automático al montar el componente (Solo estudiantes)
   useEffect(() => {
     if (!eventId) {
       toast.error('Evento no encontrado');
       navigate('/events');
       return;
     }
+
+    if (isAdmin) return;
 
     const performCheckIn = async () => {
       try {
@@ -308,7 +310,7 @@ export default function VirtualRoomPage() {
       <div className="flex-1 p-4 md:p-6 overflow-hidden">
         <div className="w-full h-full overflow-hidden rounded-2xl shadow-md bg-black">
           <iframe
-            src={`https://meet.jit.si/event-${eventId}#config.prejoinPageEnabled=false&config.requireDisplayName=false`}
+            src={`https://meet.jit.si/event-${eventId}#config.prejoinPageEnabled=${isAdmin ? 'true' : 'false'}&config.requireDisplayName=false&userInfo.displayName=${encodeURIComponent(isAdmin ? 'Administrador' : (user?.name || 'Estudiante'))}`}
             allow="camera; microphone; fullscreen; display-capture"
             className="w-full h-full border-0"
           />

@@ -209,13 +209,26 @@ const EnrollmentService = {
     const activeSession = await EventSessionModel.findActiveSession(enrollment.id);
     
     if (activeSession) {
-      // Ya existe sesión activa, no crear duplicada
+      // Ya existe sesión activa, asegurar que check_in oficial esté marcado si estaba vacío
+      if (!enrollment.check_in) {
+        await EnrollmentModel.update(enrollment.id, {
+          check_in: new Date().toISOString()
+        });
+      }
+
       return {
         message: 'Sesión ya iniciada',
         enrollment,
         session: activeSession,
         alreadyCheckedIn: true
       };
+    }
+
+    // Marcar check_in oficial si es la primera vez que entra a la sala
+    if (!enrollment.check_in) {
+      await EnrollmentModel.update(enrollment.id, {
+        check_in: new Date().toISOString()
+      });
     }
 
     // Crear nueva sesión
