@@ -262,6 +262,35 @@ const EventController = {
       }
       next(error);
     }
+  },
+
+  /**
+   * POST /api/events/:id/end
+   * Finalizar sala virtual (solo admin)
+   */
+  async endVirtualRoom(req, res, next) {
+    try {
+      const { id } = req.params;
+      const event = await EventService.endVirtualRoom(id);
+      res.json({
+        message: 'Sala finalizada exitosamente',
+        event
+      });
+    } catch (error) {
+      if (error.code === 'NOT_FOUND') {
+        return res.status(404).json({
+          error: 'No encontrado',
+          message: error.message
+        });
+      }
+      if (error.code === 'EVENT_NOT_ACTIVE') {
+        return res.status(400).json({
+          error: 'Acción no permitida',
+          message: error.message
+        });
+      }
+      next(error);
+    }
   }
 };
 

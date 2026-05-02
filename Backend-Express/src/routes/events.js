@@ -53,4 +53,10 @@ router.post('/:id/start',
   EventController.startVirtualRoom
 );
 
+router.post('/:id/end',
+  authMiddleware.authenticate,
+  authMiddleware.requireRole('admin'),
+  EventController.endVirtualRoom
+);
+
 module.exports = router;

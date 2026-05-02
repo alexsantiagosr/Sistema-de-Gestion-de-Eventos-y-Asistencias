@@ -5,9 +5,11 @@ import { enrollmentsApi } from '@/api/enrollments.api';
 import { useMyEnrollments } from '@/hooks/useEnrollments';
 import { useVirtualAccess, useEvent } from '@/hooks/useEvents';
 import { useAuth } from '@/context/AuthContext';
+import { eventsApi } from '@/api/events.api';
 import Button from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import Spinner from '@/components/ui/Spinner';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 
 /**
  * Sala virtual interna para eventos
@@ -42,8 +44,9 @@ export default function VirtualRoomPage() {
   const [showWarning, setShowWarning] = useState(false);
   const [showEndModal, setShowEndModal] = useState(false);
 
-  // Variables para tiempo restante
-  const [remainingTime, setRemainingTime] = useState(0);
+  const [showEndModal, setShowEndModal] = useState(false);
+  const [isEndingRoom, setIsEndingRoom] = useState(false);
+  const [showEndConfirm, setShowEndConfirm] = useState(false);
 
   const handleExit = () => {
     navigate('/events');
@@ -147,33 +150,12 @@ export default function VirtualRoomPage() {
     };
   }, []);
 
-  // Cierre automático de sala virtual según duración del evento
+  // Expulsar estudiantes solo si la sala pasa a is_live = false
   useEffect(() => {
-    if (!eventInfo?.date || !eventInfo?.duration) return;
-
-    const eventStart = new Date(eventInfo.date).getTime();
-    const eventEnd = eventStart + (eventInfo.duration * 60 * 1000);
-    const now = Date.now();
-
-    // Validación inicial: si entra tarde y ya terminó
-    if (now >= eventEnd) {
+    if (eventInfo && eventInfo.is_live === false && !isAdmin) {
       setShowEndModal(true);
-      return;
     }
-
-    const interval = setInterval(() => {
-      const currentNow = Date.now();
-      const remaining = Math.max(0, eventEnd - currentNow);
-
-      if (currentNow >= eventEnd) {
-        setShowEndModal(true);
-      } else {
-        setRemainingTime(remaining);
-      }
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [eventInfo]);
+  }, [eventInfo?.is_live, isAdmin]);
 
   // Check-in automático al montar el componente (Solo estudiantes)
   useEffect(() => {
@@ -199,19 +181,25 @@ export default function VirtualRoomPage() {
 
     performCheckIn();
 
-    // Check-out automático al desmontar o navegar away
-    return () => {
-      const performCheckOut = async () => {
-        try {
-          if (eventId) {
-            await enrollmentsApi.checkOutVirtualRoom(eventId);
-          }
-        } catch (error: unknown) {
-          // Silencioso si no existe sesión activa o ya fue cerrada
-          console.debug('Auto check-out: sesión no activa o ya cerrada', error);
+    // Check-out automático al desmontar estricto
+    const performCheckOut = async () => {
+      try {
+        if (eventId) {
+          await enrollmentsApi.checkOutVirtualRoom(eventId);
         }
-      };
+      } catch (error: unknown) {
+        console.debug('Auto check-out fallido o ignorado', error);
+      }
+    };
 
+    const handleWindowClose = () => {
+      performCheckOut();
+    };
+
+    window.addEventListener('beforeunload', handleWindowClose);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleWindowClose);
       performCheckOut();
     };
   }, [eventId, navigate]);
@@ -258,10 +246,10 @@ export default function VirtualRoomPage() {
         <Card className="w-full max-w-md">
           <div className="text-center">
             <div className="bg-yellow-100 text-yellow-600 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 text-3xl">
-              ⏳
+              ⛔
             </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Sala no iniciada</h2>
-            <p className="text-secondary mb-6">La sala aún no ha sido iniciada por el organizador. Por favor, espera unos minutos.</p>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Sala finalizada</h2>
+            <p className="text-secondary mb-6">El organizador aún no ha iniciado la sala o ya la ha finalizado.</p>
             <Button onClick={() => navigate('/events')}>Volver a eventos</Button>
           </div>
         </Card>
@@ -290,19 +278,26 @@ export default function VirtualRoomPage() {
               Tiempo: {sessionMinutes} {sessionMinutes === 1 ? 'minuto' : 'minutos'}
             </span>
             <span className="text-xs text-gray-600 mt-0.5">
-              Tiempo restante: {Math.floor(remainingTime / 60000)} min
-            </span>
-            <span className="text-xs text-gray-600 mt-0.5">
-              Salidas: {tabSwitchCount}
+              Salidas detectadas: {tabSwitchCount}
             </span>
           </div>
 
+          {isAdmin && (
+            <button
+              onClick={() => setShowEndConfirm(true)}
+              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition mr-2"
+              disabled={isEndingRoom}
+            >
+              Finalizar sala
+            </button>
+          )}
+
           <button
             onClick={handleExit}
-            className="px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-lg hover:bg-red-600 transition"
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition"
           >
             Salir
-          </button>
+          </button
         </div>
       </div>
 
@@ -357,6 +352,30 @@ export default function VirtualRoomPage() {
             </button>
           </div>
         </div>
+      )}
+
+      {/* Dialogo Confirmación Finalizar */}
+      {isAdmin && (
+        <ConfirmDialog
+          isOpen={showEndConfirm}
+          onClose={() => setShowEndConfirm(false)}
+          onConfirm={async () => {
+            try {
+              setIsEndingRoom(true);
+              await eventsApi.endVirtualRoom(eventId!);
+              toast.success('Sala finalizada correctamente');
+              navigate('/events');
+            } catch (err) {
+              toast.error('Error al finalizar sala');
+              setIsEndingRoom(false);
+            }
+          }}
+          title="¿Finalizar la sala virtual?"
+          message="Esto expulsará a todos los estudiantes y no podrán volver a entrar. ¿Estás seguro?"
+          confirmText="Sí, finalizar"
+          cancelText="Cancelar"
+          variant="danger"
+        />
       )}
     </div>
   );

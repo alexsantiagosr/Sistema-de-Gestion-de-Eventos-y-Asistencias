@@ -90,13 +90,6 @@ const EventService = {
       throw err;
     }
 
-    const windowCheck = this._isWithinEventTimeWindow(event.date, event.duration);
-    if (!windowCheck.ok) {
-      const err = new Error(windowCheck.message);
-      err.code = 'OUTSIDE_EVENT_WINDOW';
-      throw err;
-    }
-
     return { access: true };
   },
 
@@ -272,6 +265,20 @@ const EventService = {
       throw error;
     }
     return await EventModel.update(id, { is_live: true });
+  },
+
+  /**
+   * Finalizar sala virtual (solo admin)
+   * @param {string} id - UUID del evento
+   */
+  async endVirtualRoom(id) {
+    const event = await this.getEventById(id);
+    if (event.status !== 'active') {
+      const error = new Error('Solo se pueden finalizar eventos activos');
+      error.code = 'EVENT_NOT_ACTIVE';
+      throw error;
+    }
+    return await EventModel.update(id, { is_live: false });
   }
 };
 

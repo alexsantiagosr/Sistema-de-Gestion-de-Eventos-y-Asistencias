@@ -68,4 +68,10 @@ export const eventsApi = {
     const response = await axiosInstance.post<{ event: Event; message: string }>(`/events/${id}/start`);
     return response.data;
   },
+
+  // Finalizar sala virtual (admin)
+  endVirtualRoom: async (id: string) => {
+    const response = await axiosInstance.post<{ event: Event; message: string }>(`/events/${id}/end`);
+    return response.data;
+  },
 };
