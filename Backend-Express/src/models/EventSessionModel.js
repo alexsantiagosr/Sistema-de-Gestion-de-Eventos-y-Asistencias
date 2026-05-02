@@ -78,6 +78,26 @@ const EventSessionModel = {
   },
 
   /**
+   * Cerrar todas las sesiones de un evento
+   */
+  async closeAllEventSessions(eventId) {
+    // 1. Obtener enrollments
+    const { data: enrollments } = await supabaseAdmin
+      .from('enrollments')
+      .select('id')
+      .eq('event_id', eventId);
+
+    if (enrollments && enrollments.length > 0) {
+      const enrollmentIds = enrollments.map(e => e.id);
+      await supabaseAdmin
+        .from('event_sessions')
+        .update({ end_time: new Date().toISOString() })
+        .is('end_time', null)
+        .in('enrollment_id', enrollmentIds);
+    }
+  },
+
+  /**
    * Obtener sesiones por evento
    * @param {string} eventId - UUID del evento
    * @returns {Promise<Array>} Lista de sesiones

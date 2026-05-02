@@ -289,22 +289,22 @@ export default function EventAttendancePage() {
                         <td className="px-6 py-4">
                           <Badge
                             variant={
-                              isEligible
-                                ? 'success'
-                                : enrollment.status === 'completed'
-                                  ? 'info'
-                                  : enrollment.status === 'active'
-                                    ? 'warning'
-                                    : 'error'
+                              enrollment.status === 'cancelled'
+                                ? 'error'
+                                : isEligible
+                                  ? 'success'
+                                  : event.status === 'finished'
+                                    ? 'error'
+                                    : 'info'
                             }
                           >
-                            {isEligible
-                              ? 'Certificado'
-                              : enrollment.status === 'completed'
-                                ? 'Completado'
-                                : enrollment.status === 'active'
-                                  ? 'Activo'
-                                  : 'Cancelado'}
+                            {enrollment.status === 'cancelled'
+                              ? 'Cancelado'
+                              : isEligible
+                                ? 'Certificado'
+                                : event.status === 'finished'
+                                  ? 'No certificado'
+                                  : 'Activo'}
                           </Badge>
                         </td>
                         <td className="px-6 py-4">

@@ -13,7 +13,7 @@ export interface User {
 
 // Tipos de evento
 export type EventModality = 'presencial' | 'virtual' | 'híbrido';
-export type EventStatus = 'active' | 'completed' | 'cancelled';
+export type EventStatus = 'active' | 'completed' | 'cancelled' | 'finished';
 
 export interface Event {
   id: string;

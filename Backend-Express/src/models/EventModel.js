@@ -187,7 +187,7 @@ const EventModel = {
     // 1. Obtener eventos activos
     const { data: activeEvents, error: fetchError } = await supabaseAdmin
       .from('events')
-      .select('id, date, duration')
+      .select('id, date, duration, is_live')
       .eq('status', 'active');
 
     if (fetchError) throw fetchError;
@@ -213,13 +213,6 @@ const EventModel = {
 
     if (enrollmentsData && enrollmentsData.length > 0) {
       const enrollmentIds = enrollmentsData.map(e => e.id);
-
-      // Cerrar TODAS las event_sessions abiertas
-      await supabaseAdmin
-        .from('event_sessions')
-        .update({ end_time: new Date().toISOString() })
-        .is('end_time', null)
-        .in('enrollment_id', enrollmentIds);
 
       // Actualizar check_out = NOW() si está null
       await supabaseAdmin

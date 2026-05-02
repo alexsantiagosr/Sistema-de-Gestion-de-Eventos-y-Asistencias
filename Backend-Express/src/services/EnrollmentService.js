@@ -47,8 +47,8 @@ const EnrollmentService = {
         throw error;
       }
 
-      // Usada → error
-      if (existingEnrollment.status === 'used') {
+      // Completada → error
+      if (existingEnrollment.status === 'completed') {
         const error = new Error('Ya asististe a este evento');
         error.code = 'ALREADY_ATTENDED';
         throw error;
@@ -134,9 +134,9 @@ const EnrollmentService = {
       throw error;
     }
 
-    if (enrollment.status === 'used') {
+    if (enrollment.status === 'completed') {
       const error = new Error('No se puede cancelar una inscripción con asistencia registrada');
-      error.code = 'CANNOT_CANCEL_USED';
+      error.code = 'CANNOT_CANCEL_COMPLETED';
       throw error;
     }
 

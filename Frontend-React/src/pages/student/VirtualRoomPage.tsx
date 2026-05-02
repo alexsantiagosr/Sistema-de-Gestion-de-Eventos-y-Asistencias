@@ -56,6 +56,8 @@ export default function VirtualRoomPage() {
 
     let intervalId: NodeJS.Timeout | null = null;
 
+    const eventEndTimeRef = useRef<number>(Infinity);
+
     const sendTime = async () => {
       if (accumulatedSeconds.current > 0 && !isSending.current) {
         const secondsToSend = accumulatedSeconds.current;
@@ -76,7 +78,17 @@ export default function VirtualRoomPage() {
 
     const startCounting = () => {
       if (intervalId) return;
+
+      if (eventInfo?.date && eventInfo?.duration) {
+        eventEndTimeRef.current = new Date(eventInfo.date).getTime() + (eventInfo.duration * 60 * 1000);
+      }
+
       intervalId = setInterval(() => {
+        if (Date.now() > eventEndTimeRef.current) {
+          // El tiempo del evento ha finalizado. No seguimos contando active_seconds.
+          return;
+        }
+
         accumulatedSeconds.current += 1;
         totalActiveSeconds.current += 1;
         

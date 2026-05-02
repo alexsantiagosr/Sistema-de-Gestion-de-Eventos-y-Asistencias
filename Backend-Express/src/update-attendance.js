@@ -12,8 +12,7 @@ async function updateAttendance() {
     .from('enrollments')
     .update({
       check_in: checkIn.toISOString(),
-      check_out: checkOut.toISOString(),
-      status: 'used'
+      status: 'completed'
     })
     .eq('id', '55bb1867-7586-4aec-9563-535404afeb23')
     .select()

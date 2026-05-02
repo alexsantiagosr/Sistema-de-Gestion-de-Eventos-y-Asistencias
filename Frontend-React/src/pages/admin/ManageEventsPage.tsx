@@ -93,6 +93,7 @@ export default function ManageEventsPage() {
     const config = {
       active: { variant: 'success' as const, label: 'Activo' },
       completed: { variant: 'info' as const, label: 'Completado' },
+      finished: { variant: 'info' as const, label: 'Finalizado' },
       cancelled: { variant: 'error' as const, label: 'Cancelado' },
     };
     const { variant, label } = config[status as keyof typeof config] || config.active;
