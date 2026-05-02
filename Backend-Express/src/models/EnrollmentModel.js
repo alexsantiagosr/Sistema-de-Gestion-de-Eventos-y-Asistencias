@@ -25,7 +25,8 @@ const EnrollmentModel = {
           modality,
           duration,
           location,
-          status
+          status,
+          is_live
         )
       `)
       .eq('user_id', userId)
@@ -90,7 +91,8 @@ const EnrollmentModel = {
           id,
           title,
           status,
-          available_slots
+          available_slots,
+          is_live
         )
       `)
       .eq('user_id', userId)

@@ -43,8 +43,6 @@ export default function VirtualRoomPage() {
   const [tabSwitchCount, setTabSwitchCount] = useState(0);
   const [showWarning, setShowWarning] = useState(false);
   const [showEndModal, setShowEndModal] = useState(false);
-
-  const [showEndModal, setShowEndModal] = useState(false);
   const [isEndingRoom, setIsEndingRoom] = useState(false);
   const [showEndConfirm, setShowEndConfirm] = useState(false);
 
@@ -240,6 +238,19 @@ export default function VirtualRoomPage() {
     );
   }
 
+  if (eventInfo.is_live === undefined) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <div className="text-center p-6">
+            <Spinner />
+            <p className="text-secondary mt-4">Verificando estado de la sala...</p>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
   if (!eventInfo.is_live && !isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -297,7 +308,7 @@ export default function VirtualRoomPage() {
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition"
           >
             Salir
-          </button
+          </button>
         </div>
       </div>
 

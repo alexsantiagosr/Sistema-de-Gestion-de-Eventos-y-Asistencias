@@ -49,7 +49,6 @@ export function getStatusColor(status: string): string {
     active: 'text-green-800 bg-green-100',
     completed: 'text-blue-800 bg-blue-100',
     cancelled: 'text-red-800 bg-red-100',
-    used: 'text-purple-800 bg-purple-100',
   };
   
   return colors[status] || 'text-gray-800 bg-gray-100';

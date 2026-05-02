@@ -105,36 +105,32 @@ export default function MyEnrollmentsPage() {
   };
 
   const getStatusBadge = (enrollment: any) => {
-    let dynamicStatus = "";
-    let badgeVariant: 'success' | 'error' | 'info' | 'default' = 'default';
-
     if (enrollment.status === 'cancelled') {
-       dynamicStatus = "Cancelada";
-       badgeVariant = "error";
-    } else if (enrollment.status === 'used') {
-       dynamicStatus = "Completada";
-       badgeVariant = "info";
-    } else {
-      const eventStatus = enrollment.events?.status;
-      const now = Date.now();
-      
-      if (eventStatus === 'cancelled') {
-        dynamicStatus = "Cancelado";
-        badgeVariant = "error";
-      } else if (eventStatus === 'finished' || eventStatus === 'completed') {
-        dynamicStatus = "Finalizado";
-        badgeVariant = "error";
-      } else {
-        if (now < new Date(enrollment.events?.date || '').getTime()) {
-          dynamicStatus = "Próximo";
-          badgeVariant = "info";
-        } else {
-          dynamicStatus = "En vivo";
-          badgeVariant = "success";
-        }
-      }
+       return <Badge variant="error">Cancelada</Badge>;
+    } 
+    
+    const event = enrollment.events;
+    if (event && (event.status === 'finished' || event.status === 'completed' || enrollment.status === 'completed')) {
+       // El evento ya terminó o la inscripción está completada
+       const requiredSeconds = (event.duration * 60) * (event.min_attendance_percentage / 100);
+       const isCertified = (enrollment.active_seconds || 0) >= requiredSeconds;
+
+       if (isCertified) {
+         return <Badge variant="success">Certificado</Badge>;
+       } else {
+         return <Badge variant="error">No certificado</Badge>;
+       }
     }
-    return <Badge variant={badgeVariant}>{dynamicStatus}</Badge>;
+
+    // Evento activo o próximo
+    const now = Date.now();
+    if (event?.status === 'cancelled') {
+      return <Badge variant="error">Cancelado</Badge>;
+    } else if (now < new Date(event?.date || '').getTime()) {
+      return <Badge variant="info">Próximo</Badge>;
+    } else {
+      return <Badge variant="success">En vivo</Badge>;
+    }
   };
 
   if (isLoading) {
@@ -279,7 +275,13 @@ export default function MyEnrollmentsPage() {
                         )}
                       </>
                     )}
-                    {enrollment.status === 'used' && enrollment.events && (
+                    {(() => {
+                      const event = enrollment.events;
+                      if (!event) return false;
+                      const requiredSeconds = (event.duration * 60) * (event.min_attendance_percentage / 100);
+                      const isCertified = (enrollment.active_seconds || 0) >= requiredSeconds;
+                      return isCertified;
+                    })() && (
                       <Button
                         variant="primary"
                         size="sm"

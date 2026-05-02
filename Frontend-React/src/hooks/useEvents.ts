@@ -137,6 +137,7 @@ export function useStartVirtualRoom() {
       queryClient.invalidateQueries({ queryKey: ['events'] });
       queryClient.invalidateQueries({ queryKey: ['events-available'] });
       queryClient.invalidateQueries({ queryKey: ['event', id] });
+      queryClient.invalidateQueries({ queryKey: ['enrollments-my'] });
     },
   });
 }
