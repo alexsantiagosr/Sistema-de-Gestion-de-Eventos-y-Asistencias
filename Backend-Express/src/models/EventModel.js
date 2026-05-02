@@ -195,6 +195,16 @@ const EventModel = {
       throw error;
     }
     
+    // Cerrar TODAS las sesiones abiertas que quedaron huérfanas
+    const { error: sessionError } = await supabaseAdmin
+      .from('event_sessions')
+      .update({ end_time: new Date().toISOString() })
+      .is('end_time', null);
+
+    if (sessionError) {
+      console.error('Error cerrando sesiones huérfanas:', sessionError);
+    }
+    
     return data || 0;
   }
 };
