@@ -21,14 +21,14 @@ export default function VirtualRoomPage() {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
 
-  const { data: myEnrollments } = useMyEnrollments();
+  const { data: myEnrollments, isLoading: isLoadingEnrollments } = useMyEnrollments();
   // Fetch event details for admin, since admin might not be enrolled
   const { data: eventDetailsData } = useEvent(eventId || '');
   useVirtualAccess(eventId || '', !!eventId);
 
-  // Obtener el evento
+  // Obtener el evento (incluir 'completed' para no perder acceso si autoFinishEvents se ejecuta durante la sesión)
   const currentEnrollment = myEnrollments?.enrollments.find(
-    (e) => e.event_id === eventId && e.status === 'active'
+    (e) => e.event_id === eventId && (e.status === 'active' || e.status === 'completed')
   );
   
   const eventInfo = isAdmin ? eventDetailsData?.event : currentEnrollment?.events;
@@ -37,6 +37,7 @@ export default function VirtualRoomPage() {
   const accumulatedSeconds = useRef(0); // Segundos acumulados pendientes por enviar
   const totalActiveSeconds = useRef(0); // Segundos totales para UI
   const isSending = useRef(false);
+  const eventEndTimeRef = useRef<number>(Infinity);
   const [sessionMinutes, setSessionMinutes] = useState(0);
   
   // Variables para advertencia de salida de sala
@@ -56,7 +57,6 @@ export default function VirtualRoomPage() {
 
     let intervalId: NodeJS.Timeout | null = null;
 
-    const eventEndTimeRef = useRef<number>(Infinity);
 
     const sendTime = async () => {
       if (accumulatedSeconds.current > 0 && !isSending.current) {
@@ -228,6 +228,14 @@ export default function VirtualRoomPage() {
     );
   }
 
+  if (!isAdmin && isLoadingEnrollments) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Spinner />
+      </div>
+    );
+  }
+
   if (!isAdmin && !currentEnrollment) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -250,20 +258,10 @@ export default function VirtualRoomPage() {
     );
   }
 
-  if (eventInfo.is_live === undefined) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <div className="text-center p-6">
-            <Spinner />
-            <p className="text-secondary mt-4">Verificando estado de la sala...</p>
-          </div>
-        </Card>
-      </div>
-    );
-  }
+  // Nota: si is_live es undefined/null, se trata como "aún no definido" y se deja pasar.
+  // Solo bloqueamos al estudiante cuando is_live es explícitamente false.
 
-  if (!eventInfo.is_live && !isAdmin) {
+  if (eventInfo.is_live === false && !isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Card className="w-full max-w-md">

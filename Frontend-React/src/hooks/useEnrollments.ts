@@ -7,6 +7,8 @@ export function useMyEnrollments(status?: string) {
     queryKey: ['enrollments-my', status],
     queryFn: () => enrollmentsApi.getMyEnrollments(status),
     retry: false,
+    refetchInterval: 15000,
+    refetchOnWindowFocus: true,
   });
 }
 
