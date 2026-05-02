@@ -268,33 +268,7 @@ const EnrollmentController = {
     }
   },
 
-  /**
-   * POST /api/enrollments/:id/mark-used
-   * Marcar como usada/asistencia completa (admin)
-   */
-  async markUsed(req, res, next) {
-    try {
-      const { id } = req.params;
 
-      const result = await EnrollmentService.markAsUsed(id);
-
-      res.json(result);
-    } catch (error) {
-      if (error.code === 'NOT_FOUND') {
-        return res.status(404).json({
-          error: 'No encontrado',
-          message: error.message
-        });
-      }
-      if (error.code === 'ENROLLMENT_NOT_ACTIVE') {
-        return res.status(400).json({
-          error: 'No se puede registrar asistencia',
-          message: error.message
-        });
-      }
-      next(error);
-    }
-  },
 
   /**
    * GET /api/enrollments/event/:eventId

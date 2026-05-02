@@ -119,8 +119,7 @@ const CertificateService = {
         location: enrollment.events?.location
       },
       attendance: {
-        check_in: enrollment.check_in,
-        check_out: enrollment.check_out
+        active_seconds: enrollment.active_seconds || 0
       }
     };
   },

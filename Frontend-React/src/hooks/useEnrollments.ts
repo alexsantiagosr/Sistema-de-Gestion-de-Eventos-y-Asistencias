@@ -75,16 +75,7 @@ export function useCheckOut() {
   });
 }
 
-export function useMarkAsUsed() {
-  const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (id: string) => enrollmentsApi.markAsUsed(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['enrollments-event'] });
-    },
-  });
-}
 
 export function useAttendance(eventId: string) {
   return useQuery({

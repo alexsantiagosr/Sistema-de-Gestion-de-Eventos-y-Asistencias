@@ -38,7 +38,7 @@ export interface Event {
 }
 
 // Tipos de inscripción
-export type EnrollmentStatus = 'active' | 'used' | 'cancelled';
+export type EnrollmentStatus = 'active' | 'completed' | 'cancelled';
 
 export interface Enrollment {
   id: string;
@@ -48,6 +48,9 @@ export interface Enrollment {
   status: EnrollmentStatus;
   check_in: string | null;
   check_out: string | null;
+  active_seconds: number;
+  percentage?: number;
+  isCertified?: boolean;
   created_at: string;
   events?: Event;
   users?: User;

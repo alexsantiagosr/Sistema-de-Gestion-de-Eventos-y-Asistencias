@@ -264,38 +264,39 @@ const EnrollmentService = {
     };
   },
 
+
+
   /**
-   * Marcar inscripción como usada (asistencia completa)
-   * Solo admin puede hacerlo
-   * @param {string} enrollmentId - UUID de la inscripción
+   * Calcular asistencia a partir de modelo en memoria (sin queries)
    */
-  async markAsUsed(enrollmentId) {
-    const enrollment = await this.getEnrollment(enrollmentId);
-
-    if (enrollment.status !== 'active') {
-      const error = new Error('La inscripción no está activa');
-      error.code = 'ENROLLMENT_NOT_ACTIVE';
-      throw error;
-    }
-
-    const updated = await EnrollmentModel.update(enrollmentId, {
-      status: 'used',
-      check_in: enrollment.check_in || new Date().toISOString(),
-      check_out: enrollment.check_out || new Date().toISOString()
-    });
-
-    return {
-      message: 'Asistencia registrada exitosamente',
-      enrollment: updated
-    };
+  calculateAttendance(enrollment, event) {
+    if (!enrollment || !event) return { percentage: 0, isCertified: false };
+    
+    const activeMinutes = (enrollment.active_seconds || 0) / 60;
+    const percentage = Math.min(100, Math.round((activeMinutes / event.duration) * 100));
+    const isCertified = percentage >= event.min_attendance_percentage;
+    
+    return { percentage, isCertified };
   },
 
   /**
-   * Obtener todas las inscripciones de un evento
+   * Obtener todas las inscripciones de un evento y añadir lógica de certificación
    * @param {string} eventId - UUID del evento
    */
   async getEventEnrollments(eventId) {
-    return await EnrollmentModel.findByEvent(eventId);
+    const enrollments = await EnrollmentModel.findByEvent(eventId);
+    const event = await EventModel.findById(eventId);
+    
+    if (!event) return enrollments;
+
+    return enrollments.map(enrollment => {
+      const { percentage, isCertified } = this.calculateAttendance(enrollment, event);
+      return {
+        ...enrollment,
+        percentage,
+        isCertified
+      };
+    });
   },
 
   /**
@@ -333,6 +334,11 @@ const EnrollmentService = {
     // Cerrar la sesión activa
     const closedSession = await EventSessionModel.closeSession(activeSession.id);
 
+    // Actualizar check_out informativo
+    await EnrollmentModel.update(enrollment.id, {
+      check_out: new Date().toISOString()
+    });
+
     return {
       message: 'Check-out registrado exitosamente',
       enrollment,
@@ -342,51 +348,35 @@ const EnrollmentService = {
   },
 
   /**
-   * Calcular porcentaje de asistencia de un usuario en un evento
+   * Calcular porcentaje de asistencia de un usuario en un evento basado en active_seconds
    * @param {string} userId - UUID del usuario
    * @param {string} eventId - UUID del evento
    */
   async calculateAttendancePercentage(userId, eventId) {
     const enrollment = await EnrollmentModel.findByUserAndEvent(userId, eventId);
-
-    if (!enrollment) {
-      return null;
-    }
+    if (!enrollment) return null;
 
     const event = await EventModel.findById(eventId);
     if (!event) return null;
 
-    // Si tiene check_out, calculamos el porcentaje
-    if (enrollment.check_in && enrollment.check_out) {
-      const checkIn = new Date(enrollment.check_in);
-      const checkOut = new Date(enrollment.check_out);
-      const durationMinutes = (checkOut - checkIn) / 1000 / 60;
-
-      const percentage = Math.min(100, Math.round((durationMinutes / event.duration) * 100));
-      return {
-        percentage,
-        duration_attended: Math.round(durationMinutes),
-        duration_total: event.duration,
-        min_required: event.min_attendance_percentage,
-        certified: percentage >= event.min_attendance_percentage
-      };
-    }
+    const { percentage, isCertified } = this.calculateAttendance(enrollment, event);
 
     return {
-      percentage: 0,
-      duration_attended: 0,
+      percentage,
+      duration_attended: Math.round((enrollment.active_seconds || 0) / 60),
       duration_total: event.duration,
       min_required: event.min_attendance_percentage,
-      certified: false
+      certified: isCertified
     };
   },
 
-  /**
-   * Agregar segundos activos a una inscripción
-   * @param {string} enrollmentId - UUID de la inscripción
-   * @param {number} seconds - Segundos activos a agregar
-   */
   async addActiveSeconds(enrollmentId, seconds) {
+    if (typeof seconds !== 'number' || seconds <= 0 || seconds > 300) {
+      const error = new Error('Cantidad de segundos inválida para reporte');
+      error.code = 'INVALID_SECONDS';
+      throw error;
+    }
+
     const enrollment = await this.getEnrollment(enrollmentId);
 
     if (enrollment.status !== 'active') {

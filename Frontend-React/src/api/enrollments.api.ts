@@ -66,11 +66,7 @@ export const enrollmentsApi = {
     return response.data;
   },
 
-  // Marcar como usada (admin)
-  markAsUsed: async (id: string) => {
-    const response = await axiosInstance.post<{ enrollment: Enrollment }>(`/enrollments/${id}/mark-used`);
-    return response.data;
-  },
+
 
   // Obtener inscripciones de un evento (admin)
   getEventEnrollments: async (eventId: string) => {

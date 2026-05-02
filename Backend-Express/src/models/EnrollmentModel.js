@@ -236,7 +236,6 @@ const EnrollmentModel = {
         )
       `)
       .eq('event_id', eventId)
-      .eq('status', 'active')
       .order('created_at', { ascending: true });
 
     if (error) throw error;

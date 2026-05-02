@@ -183,29 +183,68 @@ const EventModel = {
     return data || [];
   },
 
-  /**
-   * Actualiza automáticamente a 'finished' los eventos activos que ya terminaron
-   * @returns {Promise<number>} Número de eventos actualizados
-   */
   async autoFinishEvents() {
-    const { data, error } = await supabaseAdmin.rpc('auto_finish_events');
-    
-    if (error) {
-      console.error('Error auto-finishing events:', error);
-      throw error;
-    }
-    
-    // Cerrar TODAS las sesiones abiertas que quedaron huérfanas
-    const { error: sessionError } = await supabaseAdmin
-      .from('event_sessions')
-      .update({ end_time: new Date().toISOString() })
-      .is('end_time', null);
+    // 1. Obtener eventos activos
+    const { data: activeEvents, error: fetchError } = await supabaseAdmin
+      .from('events')
+      .select('id, date, duration')
+      .eq('status', 'active');
 
-    if (sessionError) {
-      console.error('Error cerrando sesiones huérfanas:', sessionError);
-    }
+    if (fetchError) throw fetchError;
+    if (!activeEvents || activeEvents.length === 0) return 0;
+
+    const now = new Date().getTime();
     
-    return data || 0;
+    // 2. Identificar cuáles deben finalizar (date + duration <= NOW)
+    const eventsToFinish = activeEvents.filter(event => {
+       const eventEndTime = new Date(event.date).getTime() + (event.duration * 60 * 1000);
+       return eventEndTime <= now;
+    });
+
+    if (eventsToFinish.length === 0) return 0;
+
+    const newlyFinishedIds = eventsToFinish.map(e => e.id);
+
+    // 3. SOLO para esos eventos:
+    const { data: enrollmentsData } = await supabaseAdmin
+      .from('enrollments')
+      .select('id')
+      .in('event_id', newlyFinishedIds);
+
+    if (enrollmentsData && enrollmentsData.length > 0) {
+      const enrollmentIds = enrollmentsData.map(e => e.id);
+
+      // Cerrar TODAS las event_sessions abiertas
+      await supabaseAdmin
+        .from('event_sessions')
+        .update({ end_time: new Date().toISOString() })
+        .is('end_time', null)
+        .in('enrollment_id', enrollmentIds);
+
+      // Actualizar check_out = NOW() si está null
+      await supabaseAdmin
+        .from('enrollments')
+        .update({ check_out: new Date().toISOString() })
+        .is('check_out', null)
+        .in('id', enrollmentIds);
+
+      // Actualizar status = 'completed' si active_seconds > 0
+      await supabaseAdmin
+        .from('enrollments')
+        .update({ status: 'completed' })
+        .gt('active_seconds', 0)
+        .in('id', enrollmentIds);
+    }
+
+    // Actualizar status de los eventos a 'finished'
+    const { error: updateError } = await supabaseAdmin
+      .from('events')
+      .update({ status: 'finished' })
+      .in('id', newlyFinishedIds);
+
+    if (updateError) throw updateError;
+
+    return newlyFinishedIds.length;
   }
 };
 

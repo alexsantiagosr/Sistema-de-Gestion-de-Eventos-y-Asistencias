@@ -4,7 +4,7 @@ import { ArrowLeft, QrCode, CheckCircle, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useEvent } from '@/hooks/useEvents';
-import { useEventEnrollments, useCheckIn, useCheckOut, useMarkAsUsed } from '@/hooks/useEnrollments';
+import { useEventEnrollments, useCheckIn, useCheckOut } from '@/hooks/useEnrollments';
 import { toast } from 'sonner';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
@@ -26,7 +26,6 @@ export default function EventAttendancePage() {
 
   const checkInMutation = useCheckIn();
   const checkOutMutation = useCheckOut();
-  const markAsUsedMutation = useMarkAsUsed();
 
   const event = eventData?.event;
   const enrollments = enrollmentsData?.enrollments || [];
@@ -42,7 +41,7 @@ export default function EventAttendancePage() {
     total: enrollments.length,
     checkedIn: enrollments.filter(e => e.check_in).length,
     checkedOut: enrollments.filter(e => e.check_out).length,
-    completed: enrollments.filter(e => e.status === 'used').length,
+    completed: enrollments.filter(e => e.status === 'completed' || e.isCertified).length,
   };
 
   const handleScanQR = async () => {
@@ -55,9 +54,7 @@ export default function EventAttendancePage() {
       const response = await enrollmentsApi.validateQR(scannedToken);
 
       if (response.valid && response.enrollment) {
-        // Marcar asistencia completa automáticamente
-        await markAsUsedMutation.mutateAsync(response.enrollment.id);
-        toast.success(`Asistencia registrada para ${response.enrollment.user.name}`);
+        toast.success(`QR validado para ${response.enrollment.user.name}`);
         setScannedToken('');
         setQrModalOpen(false);
         refetch();
@@ -92,23 +89,13 @@ export default function EventAttendancePage() {
     }
   };
 
-  const handleMarkAsUsed = async (enrollmentId: string, userName: string) => {
-    try {
-      await markAsUsedMutation.mutateAsync(enrollmentId);
-      toast.success(`Asistencia completada para ${userName}`);
-      refetch();
-    } catch {
-      toast.error('Error al marcar asistencia');
-    }
-  };
+
 
   const handleExportCSV = () => {
-    const headers = ['Nombre', 'Email', 'Estado', 'Check-in', 'Check-out', 'Asistencia %'];
+    const headers = ['Nombre', 'Email', 'Estado', 'Check-in', 'Check-out', 'Tiempo Activo (min)', 'Asistencia %'];
     const rows = enrollments.map(e => {
-      const duration = e.check_in && e.check_out
-        ? Math.round((new Date(e.check_out).getTime() - new Date(e.check_in).getTime()) / 1000 / 60)
-        : 0;
-      const percentage = event?.duration ? Math.min(100, Math.round((duration / event.duration) * 100)) : 0;
+      const activeMinutes = Math.round((e.active_seconds || 0) / 60);
+      const percentage = e.percentage || 0;
 
       return [
         e.users?.name || '',
@@ -116,6 +103,7 @@ export default function EventAttendancePage() {
         e.status,
         e.check_in ? format(new Date(e.check_in), 'HH:mm') : '',
         e.check_out ? format(new Date(e.check_out), 'HH:mm') : '',
+        activeMinutes.toString(),
         `${percentage}%`
       ];
     });
@@ -267,6 +255,9 @@ export default function EventAttendancePage() {
                     Check-out
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">
+                    Tiempo Activo
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">
                     Asistencia
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-secondary uppercase tracking-wider">
@@ -283,11 +274,9 @@ export default function EventAttendancePage() {
                   </tr>
                 ) : (
                   filteredEnrollments.map((enrollment) => {
-                    const duration = enrollment.check_in && enrollment.check_out
-                      ? Math.round((new Date(enrollment.check_out).getTime() - new Date(enrollment.check_in).getTime()) / 1000 / 60)
-                      : 0;
-                    const percentage = event.duration ? Math.min(100, Math.round((duration / event.duration) * 100)) : 0;
-                    const isEligible = percentage >= event.min_attendance_percentage;
+                    const activeMinutes = Math.round((enrollment.active_seconds || 0) / 60);
+                    const percentage = enrollment.percentage || 0;
+                    const isEligible = !!enrollment.isCertified;
 
                     return (
                       <tr key={enrollment.id} className="hover:bg-gray-50">
@@ -300,18 +289,22 @@ export default function EventAttendancePage() {
                         <td className="px-6 py-4">
                           <Badge
                             variant={
-                              enrollment.status === 'used'
+                              isEligible
                                 ? 'success'
-                                : enrollment.status === 'active'
+                                : enrollment.status === 'completed'
                                   ? 'info'
-                                  : 'error'
+                                  : enrollment.status === 'active'
+                                    ? 'warning'
+                                    : 'error'
                             }
                           >
-                            {enrollment.status === 'used'
-                              ? 'Completado'
-                              : enrollment.status === 'active'
-                                ? 'Activo'
-                                : 'Cancelado'}
+                            {isEligible
+                              ? 'Certificado'
+                              : enrollment.status === 'completed'
+                                ? 'Completado'
+                                : enrollment.status === 'active'
+                                  ? 'Activo'
+                                  : 'Cancelado'}
                           </Badge>
                         </td>
                         <td className="px-6 py-4">
@@ -333,6 +326,11 @@ export default function EventAttendancePage() {
                           ) : (
                             <span className="text-secondary">-</span>
                           )}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-gray-900 font-medium">
+                            {activeMinutes} / {event.duration} min
+                          </span>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center">
@@ -371,18 +369,7 @@ export default function EventAttendancePage() {
                                 Check-out
                               </Button>
                             )}
-                            {enrollment.status === 'active' && enrollment.check_out && (
-                              <Button
-                                variant="primary"
-                                size="sm"
-                                onClick={() =>
-                                  handleMarkAsUsed(enrollment.id, enrollment.users?.name || '')
-                                }
-                                isLoading={markAsUsedMutation.isPending}
-                              >
-                                Completar
-                              </Button>
-                            )}
+
                           </div>
                         </td>
                       </tr>

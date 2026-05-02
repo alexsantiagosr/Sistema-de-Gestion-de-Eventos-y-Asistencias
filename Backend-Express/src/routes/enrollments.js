@@ -47,11 +47,7 @@ router.post('/:id/check-out',
   EnrollmentController.checkOutDispatcher
 );
 
-router.post('/:id/mark-used',
-  authMiddleware.authenticate,
-  authMiddleware.requireRole('admin'),
-  EnrollmentController.markUsed
-);
+
 
 // Obtener inscripciones de un evento (admin)
 router.get('/event/:eventId',
