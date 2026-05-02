@@ -95,7 +95,20 @@ const EnrollmentService = {
    * @param {string} status - Filtrar por estado (opcional)
    */
   async getUserEnrollments(userId, status = null) {
-    return await EnrollmentModel.findByUser(userId, status);
+    const enrollments = await EnrollmentModel.findByUser(userId, status);
+
+    // Enriquecer cada inscripción con porcentaje y certificación (misma fórmula que admin)
+    return enrollments.map(enrollment => {
+      const event = enrollment.events;
+      if (!event) return enrollment;
+
+      const { percentage, isCertified } = this.calculateAttendance(enrollment, event);
+      return {
+        ...enrollment,
+        percentage,
+        isCertified
+      };
+    });
   },
 
   /**

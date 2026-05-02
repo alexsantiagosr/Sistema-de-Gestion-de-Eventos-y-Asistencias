@@ -1,12 +1,10 @@
 const PDFDocument = require('pdfkit');
 const EnrollmentService = require('./EnrollmentService');
 const { supabaseAdmin } = require('../config/database');
-const fs = require('fs');
-const path = require('path');
 
 /**
  * Servicio de Generación de Certificados PDF
- * Genera certificados de asistencia para eventos
+ * Genera certificados de asistencia para eventos con diseño profesional
  */
 const CertificateService = {
   /**
@@ -52,7 +50,7 @@ const CertificateService = {
     // Crear documento PDF
     const doc = new PDFDocument({
       size: 'A4',
-      margin: 50,
+      margin: 0,
       layout: 'landscape'
     });
 
@@ -86,7 +84,9 @@ const CertificateService = {
           date,
           duration,
           modality,
-          location
+          location,
+          organized_by,
+          min_attendance_percentage
         ),
         users (
           id,
@@ -116,7 +116,9 @@ const CertificateService = {
         date: enrollment.events?.date,
         duration: enrollment.events?.duration,
         modality: enrollment.events?.modality,
-        location: enrollment.events?.location
+        location: enrollment.events?.location,
+        organized_by: enrollment.events?.organized_by || null,
+        min_attendance_percentage: enrollment.events?.min_attendance_percentage || 80
       },
       attendance: {
         active_seconds: enrollment.active_seconds || 0
@@ -124,207 +126,287 @@ const CertificateService = {
     };
   },
 
+  // ─── Color palette ───
+  colors: {
+    navy:      '#0f2b46',
+    darkNavy:  '#091e33',
+    gold:      '#c9a84c',
+    darkGold:  '#a88a3a',
+    teal:      '#2a7d8c',
+    lightTeal: '#e8f4f6',
+    text:      '#1a1a2e',
+    subtle:    '#6b7280',
+    muted:     '#9ca3af',
+    bg:        '#fdfcfa',
+    line:      '#d1d5db',
+    white:     '#ffffff',
+  },
+
   /**
    * Dibujar el certificado en el documento PDF
    */
   drawCertificate(doc, enrollment, eligibility) {
     const { width, height } = doc.page;
-    const centerX = width / 2;
-    const centerY = height / 2;
+    const c = this.colors;
 
-    // === FONDO DECORATIVO ===
-    // Borde exterior
-    doc.lineWidth(10);
-    doc.strokeColor('#1a5f7a');
-    doc.rect(20, 20, width - 40, height - 40).stroke();
+    // ─── 1. FONDO ───
+    doc.rect(0, 0, width, height).fill(c.bg);
 
-    // Borde interior
-    doc.lineWidth(2);
-    doc.strokeColor('#159895');
-    doc.rect(35, 35, width - 70, height - 70).stroke();
+    // ─── 2. FRANJA SUPERIOR (header decorativo) ───
+    doc.rect(0, 0, width, 90).fill(c.navy);
+    // Línea dorada bajo el header
+    doc.rect(0, 90, width, 4).fill(c.gold);
 
-    // Esquinas decorativas
-    this.drawCorner(doc, 45, 45);
-    this.drawCorner(doc, width - 45, 45, true, true);
-    this.drawCorner(doc, 45, height - 45, true, false);
-    this.drawCorner(doc, width - 45, height - 45, false, true);
+    // ─── 3. FRANJA INFERIOR ───
+    doc.rect(0, height - 60, width, 60).fill(c.navy);
+    doc.rect(0, height - 64, width, 4).fill(c.gold);
 
-    // === ENCABEZADO ===
-    doc.fillColor('#1a5f7a');
-    doc.fontSize(36);
-    doc.font('Helvetica-Bold');
-    doc.text('CERTIFICADO DE ASISTENCIA', centerX, 100, {
-      align: 'center',
-      width: width - 200
-    });
+    // ─── 4. BORDE DECORATIVO INTERIOR ───
+    doc.lineWidth(1.5);
+    doc.strokeColor(c.gold);
+    doc.roundedRect(30, 108, width - 60, height - 186, 3).stroke();
 
-    // Subtítulo
-    doc.fillColor('#159895');
-    doc.fontSize(16);
+    // Borde interior fino
+    doc.lineWidth(0.5);
+    doc.strokeColor(c.line);
+    doc.roundedRect(36, 114, width - 72, height - 198, 2).stroke();
+
+    // ─── 5. ESQUINAS DECORATIVAS ───
+    this.drawCornerOrnament(doc, 38, 116, c.gold);
+    this.drawCornerOrnament(doc, width - 38, 116, c.gold, true, false);
+    this.drawCornerOrnament(doc, 38, height - 82, c.gold, false, true);
+    this.drawCornerOrnament(doc, width - 38, height - 82, c.gold, true, true);
+
+    // ─── 6. LOGOTIPO / TEXTO INSTITUCIONAL EN HEADER ───
+    doc.fillColor(c.white);
+    doc.fontSize(11);
     doc.font('Helvetica');
-    doc.text('Se otorga el presente certificado a:', centerX, 160, {
+    doc.text('SISTEMA DE GESTIÓN DE EVENTOS Y ASISTENCIAS', 0, 25, {
       align: 'center',
-      width: width - 200
+      width
+    });
+    doc.fontSize(9);
+    doc.fillColor(c.gold);
+    doc.text('SGEH — Plataforma Académica Institucional', 0, 45, {
+      align: 'center',
+      width
     });
 
-    // === NOMBRE DEL ESTUDIANTE ===
-    doc.fillColor('#000000');
-    doc.fontSize(28);
+    // ─── 7. LÍNEA DORADA DECORATIVA ───
+    const ornY = 130;
+    doc.lineWidth(0.5);
+    doc.strokeColor(c.gold);
+    doc.moveTo(width / 2 - 120, ornY).lineTo(width / 2 - 20, ornY).stroke();
+    doc.moveTo(width / 2 + 20, ornY).lineTo(width / 2 + 120, ornY).stroke();
+    // Diamante central
+    const dX = width / 2, dY = ornY;
+    doc.save();
+    doc.fillColor(c.gold);
+    doc.moveTo(dX, dY - 5).lineTo(dX + 5, dY).lineTo(dX, dY + 5).lineTo(dX - 5, dY).closePath().fill();
+    doc.restore();
+
+    // ─── 8. TÍTULO ───
+    doc.fillColor(c.navy);
+    doc.fontSize(30);
     doc.font('Helvetica-Bold');
-    doc.text(enrollment.user.name, centerX, 200, {
+    doc.text('CERTIFICADO DE ASISTENCIA', 0, 145, {
       align: 'center',
-      width: width - 200
+      width,
+      characterSpacing: 2
     });
+
+    // ─── 9. SUBTÍTULO ───
+    doc.fillColor(c.teal);
+    doc.fontSize(12);
+    doc.font('Helvetica');
+    doc.text('Se otorga el presente certificado a:', 0, 190, {
+      align: 'center',
+      width
+    });
+
+    // ─── 10. NOMBRE DEL ESTUDIANTE ───
+    doc.fillColor(c.navy);
+    doc.fontSize(26);
+    doc.font('Helvetica-Bold');
+    doc.text(enrollment.user.name.toUpperCase(), 0, 215, {
+      align: 'center',
+      width,
+      characterSpacing: 1.5
+    });
+
+    // Línea bajo el nombre
+    const nameWidth = Math.min(380, enrollment.user.name.length * 14);
+    doc.lineWidth(1);
+    doc.strokeColor(c.gold);
+    doc.moveTo(width / 2 - nameWidth / 2, 248).lineTo(width / 2 + nameWidth / 2, 248).stroke();
 
     // Email
-    doc.fontSize(14);
+    doc.fontSize(10);
     doc.font('Helvetica');
-    doc.fillColor('#666666');
-    doc.text(enrollment.user.email, centerX, 235, {
+    doc.fillColor(c.subtle);
+    doc.text(enrollment.user.email, 0, 256, {
       align: 'center',
-      width: width - 200
+      width
     });
 
-    // === INFORMACIÓN DEL EVENTO ===
-    doc.fillColor('#1a5f7a');
-    doc.fontSize(18);
+    // ─── 11. CUERPO — POR HABER ASISTIDO ───
+    doc.fillColor(c.text);
+    doc.fontSize(11);
+    doc.font('Helvetica');
+    doc.text('Por haber participado satisfactoriamente en el evento:', 0, 285, {
+      align: 'center',
+      width
+    });
+
+    // Nombre del evento
+    doc.fillColor(c.navy);
+    doc.fontSize(20);
     doc.font('Helvetica-Bold');
-    doc.text('Por haber asistido al evento:', centerX, 290, {
+    doc.text(`"${enrollment.event.title}"`, 80, 308, {
       align: 'center',
-      width: width - 200
+      width: width - 160
     });
 
-    doc.fillColor('#000000');
+    // ─── 12. DETALLES DEL EVENTO ───
+    const detailY = 345;
+    doc.fontSize(9.5);
+    doc.font('Helvetica');
+    doc.fillColor(c.subtle);
+
+    const detailParts = [
+      `📅 ${this.formatDate(enrollment.event.date)}`,
+      `⏱ ${enrollment.event.duration} minutos`,
+      `📍 ${this.capitalize(enrollment.event.modality)}${enrollment.event.location ? ' — ' + enrollment.event.location : ''}`
+    ];
+
+    doc.text(detailParts.join('     |     '), 60, detailY, {
+      align: 'center',
+      width: width - 120
+    });
+
+    if (enrollment.event.organized_by) {
+      doc.text(`Organizado por: ${enrollment.event.organized_by}`, 0, detailY + 18, {
+        align: 'center',
+        width
+      });
+    }
+
+    // ─── 13. BADGE DE ASISTENCIA ───
+    const badgeCenterX = width / 2;
+    const badgeY = 395;
+    const badgeRadius = 42;
+
+    // Círculo exterior (gold)
+    doc.lineWidth(3);
+    doc.strokeColor(c.gold);
+    doc.circle(badgeCenterX, badgeY + badgeRadius, badgeRadius).stroke();
+
+    // Círculo interior (navy)
+    doc.lineWidth(1.5);
+    doc.strokeColor(c.navy);
+    doc.circle(badgeCenterX, badgeY + badgeRadius, badgeRadius - 5).stroke();
+
+    // Fondo del badge
+    doc.circle(badgeCenterX, badgeY + badgeRadius, badgeRadius - 7).fill(c.navy);
+
+    // Porcentaje
+    doc.fillColor(c.gold);
     doc.fontSize(24);
     doc.font('Helvetica-Bold');
-    doc.text(enrollment.event.title, centerX, 325, {
+    doc.text(`${eligibility.percentage}%`, badgeCenterX - 40, badgeY + badgeRadius - 16, {
       align: 'center',
-      width: width - 200
+      width: 80
     });
 
-    // Detalles del evento
-    doc.fontSize(14);
+    // Texto "ASISTENCIA"
+    doc.fillColor(c.white);
+    doc.fontSize(7);
     doc.font('Helvetica');
-    doc.fillColor('#333333');
-
-    const eventDetails = [
-      `Fecha: ${this.formatDate(enrollment.event.date)}`,
-      `Duración: ${enrollment.event.duration} minutos`,
-      `Modalidad: ${this.capitalize(enrollment.event.modality)}`,
-      enrollment.event.location ? `Lugar: ${enrollment.event.location}` : ''
-    ].filter(Boolean).join(' | ');
-
-    doc.text(eventDetails, centerX, 375, {
+    doc.text('ASISTENCIA', badgeCenterX - 40, badgeY + badgeRadius + 12, {
       align: 'center',
-      width: width - 200
+      width: 80,
+      characterSpacing: 1.5
     });
 
-    // === PORCENTAJE DE ASISTENCIA ===
-    const badgeY = 430;
-    const badgeX = centerX - 100;
-
-    // Círculo de porcentaje
-    doc.lineWidth(8);
-    doc.strokeColor('#159895');
-    doc.circle(badgeX + 100, badgeY + 50, 60).stroke();
-
-    doc.fillColor('#1a5f7a');
-    doc.fontSize(32);
-    doc.font('Helvetica-Bold');
-    doc.text(`${eligibility.percentage}%`, badgeX + 100, badgeY + 40, {
-      align: 'center',
-      width: 120
-    });
-
-    doc.fontSize(12);
+    // Etiquetas laterales del badge
+    doc.fillColor(c.subtle);
+    doc.fontSize(8.5);
     doc.font('Helvetica');
-    doc.text('ASISTENCIA', badgeX + 100, badgeY + 85, {
-      align: 'center',
-      width: 120
+    doc.text(`Tiempo activo: ${eligibility.duration_attended} min`, badgeCenterX - 200, badgeY + badgeRadius - 5, {
+      align: 'right',
+      width: 140
+    });
+    doc.text(`Mínimo requerido: ${eligibility.min_required}%`, badgeCenterX + 60, badgeY + badgeRadius - 5, {
+      align: 'left',
+      width: 160
     });
 
-    // === PIE DE PÁGINA ===
-    const footerY = height - 120;
+    // ─── 14. FIRMAS ───
+    const sigY = height - 140;
 
-    // Línea divisoria
+    // Firma izquierda
+    const sigLeftX = width / 2 - 180;
     doc.lineWidth(1);
-    doc.strokeColor('#cccccc');
-    doc.moveTo(100, footerY);
-    doc.lineTo(width - 100, footerY).stroke();
-
-    // Texto de validación
-    doc.fillColor('#999999');
+    doc.strokeColor(c.navy);
+    doc.moveTo(sigLeftX - 80, sigY).lineTo(sigLeftX + 80, sigY).stroke();
+    doc.fillColor(c.navy);
     doc.fontSize(10);
-    doc.font('Helvetica');
-    doc.text(`Certificado generado el: ${new Date().toLocaleDateString('es-ES', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })}`, centerX, footerY + 15, {
-      align: 'center',
-      width: width - 200
-    });
-
-    // Código de verificación
-    const verificationCode = `CERT-${enrollment.event.title.replace(/[^a-z0-9]/gi, '').substring(0, 8).toUpperCase()}-${Date.now()}`;
-    doc.text(`Código de verificación: ${verificationCode}`, centerX, footerY + 35, {
-      align: 'center',
-      width: width - 200
-    });
-
-    // === FIRMA ===
-    const signatureY = height - 80;
-    const signatureX = centerX + 150;
-
-    doc.lineWidth(2);
-    doc.strokeColor('#1a5f7a');
-    doc.moveTo(signatureX - 100, signatureY);
-    doc.lineTo(signatureX + 100, signatureY).stroke();
-
-    doc.fillColor('#1a5f7a');
-    doc.fontSize(12);
     doc.font('Helvetica-Bold');
-    doc.text('COORDINADOR ACADÉMICO', signatureX, signatureY + 10, {
-      align: 'center',
-      width: 200
-    });
-
-    doc.fontSize(10);
+    doc.text('COORDINADOR ACADÉMICO', sigLeftX - 80, sigY + 8, { align: 'center', width: 160 });
+    doc.fontSize(8);
     doc.font('Helvetica');
-    doc.fillColor('#666666');
-    doc.text('SGEH - Sistema de Gestión de Eventos', signatureX, signatureY + 30, {
-      align: 'center',
-      width: 200
-    });
+    doc.fillColor(c.subtle);
+    doc.text('Dirección de Eventos', sigLeftX - 80, sigY + 22, { align: 'center', width: 160 });
+
+    // Firma derecha
+    const sigRightX = width / 2 + 180;
+    doc.lineWidth(1);
+    doc.strokeColor(c.navy);
+    doc.moveTo(sigRightX - 80, sigY).lineTo(sigRightX + 80, sigY).stroke();
+    doc.fillColor(c.navy);
+    doc.fontSize(10);
+    doc.font('Helvetica-Bold');
+    doc.text('DIRECTOR DE PROGRAMA', sigRightX - 80, sigY + 8, { align: 'center', width: 160 });
+    doc.fontSize(8);
+    doc.font('Helvetica');
+    doc.fillColor(c.subtle);
+    doc.text('Facultad Académica', sigRightX - 80, sigY + 22, { align: 'center', width: 160 });
+
+    // ─── 15. PIE DE PÁGINA (sobre la franja navy) ───
+    const footY = height - 50;
+    const verificationCode = `CERT-${enrollment.event.title.replace(/[^a-z0-9]/gi, '').substring(0, 8).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
+
+    doc.fillColor(c.muted);
+    doc.fontSize(7.5);
+    doc.font('Helvetica');
+    doc.text(
+      `Certificado generado el ${new Date().toLocaleDateString('es-CO', { timeZone: 'America/Bogota', year: 'numeric', month: 'long', day: 'numeric' })}  •  Código de verificación: ${verificationCode}`,
+      0, footY, { align: 'center', width }
+    );
+    doc.text(
+      'SGEH — Sistema de Gestión de Eventos y Asistencias  •  Documento generado automáticamente',
+      0, footY + 13, { align: 'center', width }
+    );
   },
 
   /**
-   * Dibujar esquina decorativa
+   * Dibujar ornamento de esquina
    */
-  drawCorner(doc, x, y, flipX = false, flipY = false) {
-    const size = 30;
-    doc.lineWidth(3);
-    doc.strokeColor('#159895');
+  drawCornerOrnament(doc, x, y, color, flipX = false, flipY = false) {
+    const size = 20;
+    const dx = flipX ? -1 : 1;
+    const dy = flipY ? -1 : 1;
 
-    if (flipX && flipY) { // Superior derecha
-      doc.moveTo(x, y - size);
-      doc.lineTo(x, y);
-      doc.lineTo(x - size, y).stroke();
-    } else if (flipX) { // Inferior derecha
-      doc.moveTo(x, y + size);
-      doc.lineTo(x, y);
-      doc.lineTo(x - size, y).stroke();
-    } else if (flipY) { // Superior izquierda
-      doc.moveTo(x, y - size);
-      doc.lineTo(x, y);
-      doc.lineTo(x + size, y).stroke();
-    } else { // Inferior izquierda
-      doc.moveTo(x, y + size);
-      doc.lineTo(x, y);
-      doc.lineTo(x + size, y).stroke();
-    }
+    doc.lineWidth(1.5);
+    doc.strokeColor(color);
+
+    // L shape
+    doc.moveTo(x, y + dy * size).lineTo(x, y).lineTo(x + dx * size, y).stroke();
+
+    // Inner dot
+    doc.lineWidth(1);
+    doc.moveTo(x + dx * 4, y + dy * 4).lineTo(x + dx * 8, y + dy * 4).stroke();
+    doc.moveTo(x + dx * 4, y + dy * 4).lineTo(x + dx * 4, y + dy * 8).stroke();
   },
 
   /**
@@ -333,7 +415,8 @@ const CertificateService = {
   formatDate(dateString) {
     if (!dateString) return '';
     const date = new Date(dateString);
-    return date.toLocaleDateString('es-ES', {
+    return date.toLocaleDateString('es-CO', {
+      timeZone: 'America/Bogota',
       year: 'numeric',
       month: 'long',
       day: 'numeric',

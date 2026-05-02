@@ -26,7 +26,8 @@ const EnrollmentModel = {
           duration,
           location,
           status,
-          is_live
+          is_live,
+          min_attendance_percentage
         )
       `)
       .eq('user_id', userId)

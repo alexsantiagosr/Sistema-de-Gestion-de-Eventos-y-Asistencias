@@ -111,11 +111,8 @@ export default function MyEnrollmentsPage() {
     
     const event = enrollment.events;
     if (event && (event.status === 'finished' || event.status === 'completed' || enrollment.status === 'completed')) {
-       // El evento ya terminó o la inscripción está completada
-       const requiredSeconds = (event.duration * 60) * (event.min_attendance_percentage / 100);
-       const isCertified = (enrollment.active_seconds || 0) >= requiredSeconds;
-
-       if (isCertified) {
+       // Usar isCertified del backend (misma fórmula que admin)
+       if (enrollment.isCertified) {
          return <Badge variant="success">Certificado</Badge>;
        } else {
          return <Badge variant="error">No certificado</Badge>;
@@ -275,13 +272,7 @@ export default function MyEnrollmentsPage() {
                         )}
                       </>
                     )}
-                    {(() => {
-                      const event = enrollment.events;
-                      if (!event) return false;
-                      const requiredSeconds = (event.duration * 60) * (event.min_attendance_percentage / 100);
-                      const isCertified = (enrollment.active_seconds || 0) >= requiredSeconds;
-                      return isCertified;
-                    })() && (
+                    {enrollment.isCertified && (
                       <Button
                         variant="primary"
                         size="sm"

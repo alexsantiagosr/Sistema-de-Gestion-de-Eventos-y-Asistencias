@@ -145,8 +145,8 @@ const CertificateController = {
       const certificates = [];
 
       for (const enrollment of enrollments) {
-        // Solo eventos completados
-        if (enrollment.events?.status !== 'completed') {
+        // Solo eventos finalizados o inscripciones completadas
+        if (enrollment.events?.status !== 'finished' && enrollment.status !== 'completed') {
           continue;
         }
 
