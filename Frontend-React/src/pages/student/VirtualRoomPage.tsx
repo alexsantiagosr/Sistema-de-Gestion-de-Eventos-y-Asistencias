@@ -191,14 +191,14 @@ export default function VirtualRoomPage() {
 
     performCheckIn();
 
-    // Check-out automático al desmontar estricto
+    // Check-out automático al desmontar (solo estudiantes)
     const performCheckOut = async () => {
       try {
         if (eventId) {
           await enrollmentsApi.checkOutVirtualRoom(eventId);
         }
-      } catch (error: unknown) {
-        console.debug('Auto check-out fallido o ignorado', error);
+      } catch {
+        // Silencioso — el enrollment puede ya estar completed
       }
     };
 
@@ -212,7 +212,7 @@ export default function VirtualRoomPage() {
       window.removeEventListener('beforeunload', handleWindowClose);
       performCheckOut();
     };
-  }, [eventId, navigate]);
+  }, [eventId, navigate, isAdmin]);
 
   // Validaciones
   if (!eventId) {

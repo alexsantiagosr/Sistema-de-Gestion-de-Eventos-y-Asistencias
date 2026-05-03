@@ -118,14 +118,17 @@ export default function AdminDashboardPage() {
                     </div>
                     <div className="flex items-center space-x-2 flex-shrink-0 ml-2">
                       <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${event.status === 'active'
-                          ? 'bg-green-100 text-green-800'
-                          : event.status === 'completed'
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-red-100 text-red-800'
+                        className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
+                          event.status === 'active'
+                            ? 'bg-green-100 text-green-800'
+                            : event.status === 'finished'
+                              ? 'bg-blue-100 text-blue-800'
+                              : event.status === 'cancelled'
+                                ? 'bg-red-100 text-red-800'
+                                : 'bg-gray-100 text-gray-800'
                           }`}
                       >
-                        {event.status === 'active' ? 'Activo' : event.status === 'completed' ? 'Completado' : 'Cancelado'}
+                        {event.status === 'active' ? 'Activo' : event.status === 'finished' ? 'Finalizado' : event.status === 'cancelled' ? 'Cancelado' : event.status}
                       </span>
                     </div>
                   </div>
