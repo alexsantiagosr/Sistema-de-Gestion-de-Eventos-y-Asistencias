@@ -204,19 +204,19 @@ export default function MyEnrollmentsPage() {
                     </div>
 
                     {/* Attendance Info */}
-                    {(enrollment.check_in || enrollment.check_out) && (
+                    {(enrollment.session_start || enrollment.session_end) && (
                       <div className="p-3 bg-gray-50 rounded-lg mb-4">
                         <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm">
-                          {enrollment.check_in && (
+                          {enrollment.session_start && (
                             <span className="text-success flex items-center">
                               <CheckCircle className="w-4 h-4 inline mr-1" />
-                              Check-in: {new Date(enrollment.check_in).toLocaleString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit' })}
+                              Check-in: {new Date(enrollment.session_start).toLocaleString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit' })}
                             </span>
                           )}
-                          {enrollment.check_out && (
+                          {enrollment.session_end && (
                             <span className="text-success flex items-center">
                               <CheckCircle className="w-4 h-4 inline mr-1" />
-                              Check-out: {new Date(enrollment.check_out).toLocaleString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit' })}
+                              Check-out: {new Date(enrollment.session_end).toLocaleString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit' })}
                             </span>
                           )}
                         </div>

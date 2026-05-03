@@ -28,6 +28,10 @@ const EnrollmentModel = {
           status,
           is_live,
           min_attendance_percentage
+        ),
+        event_sessions (
+          start_time,
+          end_time
         )
       `)
       .eq('user_id', userId)
@@ -236,6 +240,10 @@ const EnrollmentModel = {
           id,
           name,
           email
+        ),
+        event_sessions (
+          start_time,
+          end_time
         )
       `)
       .eq('event_id', eventId)

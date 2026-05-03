@@ -97,16 +97,19 @@ const EnrollmentService = {
   async getUserEnrollments(userId, status = null) {
     const enrollments = await EnrollmentModel.findByUser(userId, status);
 
-    // Enriquecer cada inscripción con porcentaje y certificación (misma fórmula que admin)
+    // Enriquecer cada inscripción con porcentaje, certificación y tiempos de sesión reales
     return enrollments.map(enrollment => {
       const event = enrollment.events;
       if (!event) return enrollment;
 
       const { percentage, isCertified } = this.calculateAttendance(enrollment, event);
+      const { session_start, session_end } = this.extractSessionTimes(enrollment.event_sessions);
       return {
         ...enrollment,
         percentage,
-        isCertified
+        isCertified,
+        session_start,
+        session_end
       };
     });
   },
@@ -293,6 +296,37 @@ const EnrollmentService = {
   },
 
   /**
+   * Extraer tiempos reales de sesión desde event_sessions
+   * @param {Array} sessions - Array de sesiones { start_time, end_time }
+   * @returns {{ session_start: string|null, session_end: string|null }}
+   */
+  extractSessionTimes(sessions) {
+    if (!sessions || sessions.length === 0) {
+      return { session_start: null, session_end: null };
+    }
+
+    // Primera entrada (start_time más antiguo)
+    const starts = sessions
+      .filter(s => s.start_time)
+      .map(s => new Date(s.start_time).getTime());
+    
+    // Última salida (end_time más reciente, excluyendo null = sesión aún activa)
+    const ends = sessions
+      .filter(s => s.end_time)
+      .map(s => new Date(s.end_time).getTime());
+
+    const session_start = starts.length > 0
+      ? new Date(Math.min(...starts)).toISOString()
+      : null;
+
+    const session_end = ends.length > 0
+      ? new Date(Math.max(...ends)).toISOString()
+      : null;
+
+    return { session_start, session_end };
+  },
+
+  /**
    * Obtener todas las inscripciones de un evento y añadir lógica de certificación
    * @param {string} eventId - UUID del evento
    */
@@ -304,10 +338,13 @@ const EnrollmentService = {
 
     return enrollments.map(enrollment => {
       const { percentage, isCertified } = this.calculateAttendance(enrollment, event);
+      const { session_start, session_end } = this.extractSessionTimes(enrollment.event_sessions);
       return {
         ...enrollment,
         percentage,
-        isCertified
+        isCertified,
+        session_start,
+        session_end
       };
     });
   },

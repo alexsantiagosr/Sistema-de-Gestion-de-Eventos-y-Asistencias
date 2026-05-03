@@ -51,6 +51,8 @@ export interface Enrollment {
   active_seconds: number;
   percentage?: number;
   isCertified?: boolean;
+  session_start?: string | null;
+  session_end?: string | null;
   created_at: string;
   events?: Event;
   users?: User;

@@ -101,8 +101,8 @@ export default function EventAttendancePage() {
         e.users?.name || '',
         e.users?.email || '',
         e.status,
-        e.check_in ? format(new Date(e.check_in), 'HH:mm') : '',
-        e.check_out ? format(new Date(e.check_out), 'HH:mm') : '',
+        e.session_start ? new Date(e.session_start).toLocaleString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit' }) : '',
+        e.session_end ? new Date(e.session_end).toLocaleString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit' }) : '',
         activeMinutes.toString(),
         `${percentage}%`
       ];
@@ -308,23 +308,23 @@ export default function EventAttendancePage() {
                           </Badge>
                         </td>
                         <td className="px-6 py-4">
-                          {enrollment.check_in ? (
+                          {enrollment.session_start ? (
                             <span className="text-success">
                               <CheckCircle className="w-4 h-4 inline mr-1" />
-                              {format(new Date(enrollment.check_in), 'HH:mm')}
+                              {new Date(enrollment.session_start).toLocaleString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit' })}
                             </span>
                           ) : (
                             <span className="text-secondary">-</span>
                           )}
                         </td>
                         <td className="px-6 py-4">
-                          {enrollment.check_out ? (
+                          {enrollment.session_end ? (
                             <span className="text-purple-600">
                               <CheckCircle className="w-4 h-4 inline mr-1" />
-                              {format(new Date(enrollment.check_out), 'HH:mm')}
+                              {new Date(enrollment.session_end).toLocaleString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit' })}
                             </span>
                           ) : (
-                            <span className="text-secondary">-</span>
+                            <span className="text-secondary">{enrollment.session_start ? 'En sala' : '-'}</span>
                           )}
                         </td>
                         <td className="px-6 py-4">
