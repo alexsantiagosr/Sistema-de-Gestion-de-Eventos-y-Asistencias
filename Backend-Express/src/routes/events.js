@@ -12,11 +12,10 @@ const authMiddleware = require('../middlewares/auth');
 router.get('/', EventController.index);
 router.get('/available', EventController.available);
 
-// Estudiante: acceso a sala virtual (antes de /:id para evitar ambigüedad)
+// Estudiante/Admin: acceso a sala virtual (antes de /:id para evitar ambigüedad)
 router.get(
   '/:eventId/virtual-access',
   authMiddleware.authenticate,
-  authMiddleware.requireRole('student'),
   EventController.virtualAccess
 );
 

@@ -145,7 +145,7 @@ const EnrollmentModel = {
    */
   async create({ user_id, event_id }) {
     // Generar token QR único
-    const qrToken = `ENROLL-${uuidv4()}-${Date.now()}`;
+    const qrToken = `E-${uuidv4().replace(/-/g, '').substring(0, 8)}-${Date.now().toString(36)}`;
 
     const { data, error } = await supabaseAdmin
       .from('enrollments')

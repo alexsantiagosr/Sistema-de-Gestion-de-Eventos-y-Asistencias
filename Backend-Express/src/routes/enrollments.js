@@ -34,13 +34,13 @@ router.get('/qr/:qrToken',
   EnrollmentController.getByQr
 );
 
-// Check-in: estudiante (id = eventId) o admin (id = enrollmentId)
+// Check-in: estudiante (id = eventId) o admin/staff (id = enrollmentId)
 router.post('/:id/check-in',
   authMiddleware.authenticate,
   EnrollmentController.checkInDispatcher
 );
 
-// Check-out: estudiante (id = eventId) o admin (id = enrollmentId)
+// Check-out: estudiante (id = eventId) o admin/staff (id = enrollmentId)
 // Usa authenticateWithQueryToken para soportar navigator.sendBeacon (sin headers)
 router.post('/:id/check-out',
   authMiddleware.authenticateWithQueryToken,
@@ -52,7 +52,7 @@ router.post('/:id/check-out',
 // Obtener inscripciones de un evento (admin)
 router.get('/event/:eventId',
   authMiddleware.authenticate,
-  authMiddleware.requireRole('admin'),
+  authMiddleware.requireRole('admin', 'staff'),
   EnrollmentController.getEventEnrollments
 );
 

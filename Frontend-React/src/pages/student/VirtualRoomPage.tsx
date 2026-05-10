@@ -24,7 +24,7 @@ export default function VirtualRoomPage() {
   const { data: myEnrollments, isLoading: isLoadingEnrollments } = useMyEnrollments();
   // Fetch event details for admin, since admin might not be enrolled
   const { data: eventDetailsData } = useEvent(eventId || '');
-  useVirtualAccess(eventId || '', !!eventId);
+  useVirtualAccess(eventId || '', !!eventId && !isAdmin);
 
   // Obtener el evento (incluir 'completed' para no perder acceso si autoFinishEvents se ejecuta durante la sesión)
   const currentEnrollment = myEnrollments?.enrollments.find(
@@ -140,8 +140,10 @@ export default function VirtualRoomPage() {
     };
   }, [eventId]);
 
-  // Detección robusta de cambio de pestaña (solo visibilitychange)
+  // Detección robusta de cambio de pestaña (solo estudiantes)
   useEffect(() => {
+    if (isAdmin) return;
+
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
         setTabSwitchCount((prev) => prev + 1);
@@ -158,7 +160,7 @@ export default function VirtualRoomPage() {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, []);
+  }, [isAdmin]);
 
   // Expulsar estudiantes solo si la sala pasa a is_live = false
   useEffect(() => {
@@ -298,9 +300,11 @@ export default function VirtualRoomPage() {
             <span className="text-xs text-gray-500">
               Tiempo: {sessionMinutes} {sessionMinutes === 1 ? 'minuto' : 'minutos'}
             </span>
-            <span className="text-xs text-gray-600 mt-0.5">
-              Salidas detectadas: {tabSwitchCount}
-            </span>
+            {!isAdmin && (
+              <span className="text-xs text-gray-600 mt-0.5">
+                Salidas detectadas: {tabSwitchCount}
+              </span>
+            )}
           </div>
 
           {isAdmin && (
@@ -334,7 +338,7 @@ export default function VirtualRoomPage() {
       </div>
 
       {/* Alerta flotante de advertencia */}
-      {showWarning && (
+      {!isAdmin && showWarning && (
         <div className="fixed bottom-4 right-4 bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-3 rounded-lg shadow-md z-50">
           Has salido de la sala. Esto puede afectar tu certificación.
         </div>

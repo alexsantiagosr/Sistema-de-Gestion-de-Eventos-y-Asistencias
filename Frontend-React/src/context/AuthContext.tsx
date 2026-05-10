@@ -10,6 +10,7 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  isStaff: boolean;
   login: (email: string, password: string, navigate?: ReturnType<typeof useNavigate>) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
@@ -56,6 +57,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (navigate) {
         if (response.user.role === 'admin') {
           navigate('/dashboard', { replace: true });
+        } else if (response.user.role === 'staff') {
+          navigate('/staff/scan', { replace: true });
         } else {
           navigate('/panel', { replace: true });
         }
@@ -100,6 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isLoading,
     isAuthenticated: !!token && !!user,
     isAdmin: user?.role === 'admin',
+    isStaff: user?.role === 'staff',
     login,
     register,
     logout,

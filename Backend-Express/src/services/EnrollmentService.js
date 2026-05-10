@@ -56,7 +56,7 @@ const EnrollmentService = {
 
       // Cancelada → reactivar con nuevo QR
       if (existingEnrollment.status === 'cancelled') {
-        const newQrToken = `ENROLL-${uuidv4()}-${Date.now()}`;
+        const newQrToken = `E-${uuidv4().replace(/-/g, '').substring(0, 8)}-${Date.now().toString(36)}`;
 
         const updated = await EnrollmentModel.update(existingEnrollment.id, {
           status: 'active',
@@ -215,7 +215,7 @@ const EnrollmentService = {
       throw error;
     }
 
-    if (enrollment.status !== 'active') {
+    if (enrollment.status !== 'active' && enrollment.status !== 'completed') {
       const error = new Error('Tu inscripción no está activa');
       error.code = 'ENROLLMENT_NOT_ACTIVE';
       throw error;
@@ -363,7 +363,8 @@ const EnrollmentService = {
       throw error;
     }
 
-    if (enrollment.status !== 'active') {
+    // Permitir check-out de inscripciones completadas (sala aún activa)
+    if (enrollment.status !== 'active' && enrollment.status !== 'completed') {
       const error = new Error('Tu inscripción no está activa');
       error.code = 'ENROLLMENT_NOT_ACTIVE';
       throw error;

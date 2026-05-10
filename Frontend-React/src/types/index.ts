@@ -1,5 +1,5 @@
 // Tipos de usuario
-export type UserRole = 'admin' | 'student';
+export type UserRole = 'admin' | 'student' | 'staff';
 
 export interface User {
   id: string;

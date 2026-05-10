@@ -84,7 +84,7 @@ const EventService = {
       throw err;
     }
 
-    if (enrollment.status !== 'active') {
+    if (enrollment.status !== 'active' && enrollment.status !== 'completed') {
       const err = new Error('Tu inscripción no está activa');
       err.code = 'ENROLLMENT_NOT_ACTIVE';
       throw err;

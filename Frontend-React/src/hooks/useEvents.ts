@@ -55,7 +55,8 @@ export function useVirtualAccess(eventId: string, enabled: boolean) {
     queryKey: ['virtual-access', eventId],
     queryFn: () => eventsApi.getVirtualAccess(eventId),
     enabled: !!eventId && enabled,
-    staleTime: 30 * 1000,
+    staleTime: 0,
+    refetchOnMount: 'always',
     refetchInterval: enabled ? 60 * 1000 : false,
     retry: false,
   });

@@ -171,7 +171,7 @@ const EnrollmentController = {
         return next(error);
       }
     }
-    if (req.user.role === 'admin') {
+    if (req.user.role === 'admin' || req.user.role === 'staff') {
       return EnrollmentController.checkIn(req, res, next);
     }
     return res.status(403).json({
@@ -205,7 +205,7 @@ const EnrollmentController = {
         return next(error);
       }
     }
-    if (req.user.role === 'admin') {
+    if (req.user.role === 'admin' || req.user.role === 'staff') {
       return EnrollmentController.checkOut(req, res, next);
     }
     return res.status(403).json({

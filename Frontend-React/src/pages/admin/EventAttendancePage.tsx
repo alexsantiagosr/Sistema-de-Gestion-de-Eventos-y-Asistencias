@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
 import Spinner from '@/components/ui/Spinner';
 import Modal from '@/components/ui/Modal';
+import QRScanner from '@/components/ui/QRScanner';
 import { enrollmentsApi } from '@/api/enrollments.api';
 
 export default function EventAttendancePage() {
@@ -20,6 +21,8 @@ export default function EventAttendancePage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [qrModalOpen, setQrModalOpen] = useState(false);
   const [scannedToken, setScannedToken] = useState('');
+  const [scanMode, setScanMode] = useState<'camera' | 'manual'>('camera');
+  const [isValidating, setIsValidating] = useState(false);
 
   const { data: eventData } = useEvent(id!);
   const { data: enrollmentsData, refetch } = useEventEnrollments(id!);
@@ -44,19 +47,22 @@ export default function EventAttendancePage() {
     completed: enrollments.filter(e => e.status === 'completed' || e.isCertified).length,
   };
 
-  const handleScanQR = async () => {
-    if (!scannedToken) {
+  const handleScanQR = async (token?: string) => {
+    const tokenToValidate = token || scannedToken;
+    if (!tokenToValidate) {
       toast.error('Ingresa el código QR');
       return;
     }
 
+    setIsValidating(true);
     try {
-      const response = await enrollmentsApi.validateQR(scannedToken);
+      const response = await enrollmentsApi.validateQR(tokenToValidate);
 
       if (response.valid && response.enrollment) {
         toast.success(`QR validado para ${response.enrollment.user.name}`);
         setScannedToken('');
         setQrModalOpen(false);
+        setScanMode('camera');
         refetch();
       }
     } catch (error: unknown) {
@@ -66,7 +72,14 @@ export default function EventAttendancePage() {
       } else {
         toast.error('QR inválido o no encontrado');
       }
+    } finally {
+      setIsValidating(false);
     }
+  };
+
+  const handleCameraScan = (decodedText: string) => {
+    // Auto-validar el QR escaneado por cámara
+    handleScanQR(decodedText);
   };
 
   const handleCheckIn = async (enrollmentId: string, userName: string) => {
@@ -388,34 +401,93 @@ export default function EventAttendancePage() {
         onClose={() => {
           setQrModalOpen(false);
           setScannedToken('');
+          setScanMode('camera');
         }}
-        title="Escanear Código QR"
+        title="Verificar Asistencia por QR"
         size="md"
       >
         <div className="space-y-4">
-          <p className="text-sm text-secondary">
-            Ingresa el token del código QR escaneado o escribe manualmente:
-          </p>
-          <Input
-            placeholder="ENROLL-xxxx-xxxx-xxxx"
-            value={scannedToken}
-            onChange={(e) => setScannedToken(e.target.value)}
-            icon={<QrCode className="w-5 h-5" />}
-          />
-          <div className="flex items-center justify-end space-x-3">
-            <Button
-              variant="secondary"
-              onClick={() => {
-                setQrModalOpen(false);
-                setScannedToken('');
-              }}
+          {/* Mode Tabs */}
+          <div className="flex rounded-lg bg-gray-100 p-1">
+            <button
+              type="button"
+              onClick={() => setScanMode('camera')}
+              className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-all ${
+                scanMode === 'camera'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
             >
-              Cancelar
-            </Button>
-            <Button onClick={handleScanQR} isLoading={checkInMutation.isPending}>
-              Registrar Asistencia
-            </Button>
+              📷 Escanear con cámara
+            </button>
+            <button
+              type="button"
+              onClick={() => setScanMode('manual')}
+              className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-all ${
+                scanMode === 'manual'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              ⌨️ Ingresar manualmente
+            </button>
           </div>
+
+          {/* Camera Mode */}
+          {scanMode === 'camera' && qrModalOpen && (
+            <div>
+              <p className="text-sm text-secondary mb-3">
+                Apunta la cámara al código QR del estudiante:
+              </p>
+              <QRScanner
+                onScanSuccess={handleCameraScan}
+                onScanError={(err) => {
+                  console.warn('Error en cámara QR:', err);
+                  setScanMode('manual');
+                  toast.error('No se pudo acceder a la cámara. Usa el modo manual.');
+                }}
+              />
+              {isValidating && (
+                <div className="flex items-center justify-center py-3 text-blue-600 text-sm">
+                  <svg className="animate-spin h-4 w-4 mr-2" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Validando QR…
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Manual Mode */}
+          {scanMode === 'manual' && (
+            <div>
+              <p className="text-sm text-secondary mb-3">
+                Ingresa el token del código QR escaneado o escribe manualmente:
+              </p>
+              <Input
+                placeholder="E-xxxx-xxxx"
+                value={scannedToken}
+                onChange={(e) => setScannedToken(e.target.value)}
+                icon={<QrCode className="w-5 h-5" />}
+              />
+              <div className="flex items-center justify-end space-x-3 mt-4">
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setQrModalOpen(false);
+                    setScannedToken('');
+                    setScanMode('camera');
+                  }}
+                >
+                  Cancelar
+                </Button>
+                <Button onClick={() => handleScanQR()} isLoading={isValidating}>
+                  Registrar Asistencia
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </Modal>
     </div>

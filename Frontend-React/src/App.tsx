@@ -4,6 +4,7 @@ import { Toaster } from 'sonner';
 import { AuthProvider } from '@/context/AuthContext';
 import PrivateRoute from '@/guards/PrivateRoute';
 import AdminRoute from '@/guards/AdminRoute';
+import StaffRoute from '@/guards/StaffRoute';
 import Layout from '@/components/layout/Layout';
 
 // Auth pages
@@ -22,6 +23,9 @@ import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
 import ManageEventsPage from '@/pages/admin/ManageEventsPage';
 import CreateEditEventPage from '@/pages/admin/CreateEditEventPage';
 import EventAttendancePage from '@/pages/admin/EventAttendancePage';
+
+// Staff pages
+import StaffScanPage from '@/pages/staff/StaffScanPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -61,7 +65,12 @@ function App() {
               <Route path="/admin/events/:id/attendance" element={<Layout><EventAttendancePage /></Layout>} />
             </Route>
 
-            {/* Redirect root based on role - handled in AuthContext */}
+            {/* Protected staff routes */}
+            <Route element={<StaffRoute />}>
+              <Route path="/staff/scan" element={<StaffScanPage />} />
+            </Route>
+
+            {/* Redirect root */}
             <Route path="/" element={<Navigate to="/panel" replace />} />
             <Route path="*" element={<Navigate to="/panel" replace />} />
           </Routes>

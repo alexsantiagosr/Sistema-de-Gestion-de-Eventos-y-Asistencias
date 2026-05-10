@@ -5,13 +5,10 @@ import {
   MapPin,
   QrCode,
   XCircle,
-  FileText,
-  Download,
   CheckCircle,
   AlertCircle
 } from 'lucide-react';
 import { useMyEnrollments, useCancelEnrollment } from '@/hooks/useEnrollments';
-import { useDownloadCertificate } from '@/hooks/useCertificates';
 import { toast } from 'sonner';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
@@ -21,7 +18,6 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import VirtualRoomAccessButton from '@/components/student/VirtualRoomAccessButton';
 import Spinner from '@/components/ui/Spinner';
 import { qrApi } from '@/api/qr.api';
-import { certificatesApi } from '@/api/certificates.api';
 import { useAuth } from '@/context/AuthContext';
 
 export default function MyEnrollmentsPage() {
@@ -38,7 +34,6 @@ export default function MyEnrollmentsPage() {
 
   const { data: enrollmentsData, isLoading, refetch } = useMyEnrollments();
   const cancelMutation = useCancelEnrollment();
-  const downloadCertMutation = useDownloadCertificate();
   const { user } = useAuth();
 
   if (user?.role === 'admin') {
@@ -79,28 +74,6 @@ export default function MyEnrollmentsPage() {
       refetch();
     } catch {
       toast.error('Error al cancelar la inscripción');
-    }
-  };
-
-  const handleDownloadCertificate = async (eventId: string) => {
-    try {
-      const blob = await certificatesApi.download(eventId);
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `certificado-${eventId}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-      toast.success('Certificado descargado correctamente');
-    } catch (error: unknown) {
-      if (error instanceof Error && 'response' in error) {
-        const apiError = error as { response?: { data?: { message?: string } } };
-        toast.error(apiError.response?.data?.message || 'No eres elegible para el certificado aún');
-      } else {
-        toast.error('Error al descargar el certificado');
-      }
     }
   };
 
@@ -238,15 +211,6 @@ export default function MyEnrollmentsPage() {
                           Ver QR
                         </Button>
                         <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => { }}
-                          className="flex-1 sm:flex-none"
-                        >
-                          <Download className="w-4 h-4 mr-2" />
-                          Descargar
-                        </Button>
-                        <Button
                           variant="danger"
                           size="sm"
                           onClick={() =>
@@ -272,18 +236,7 @@ export default function MyEnrollmentsPage() {
                         )}
                       </>
                     )}
-                    {enrollment.isCertified && (
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() => handleDownloadCertificate(enrollment.event_id)}
-                        isLoading={downloadCertMutation.isPending}
-                        className="w-full sm:w-auto"
-                      >
-                        <FileText className="w-4 h-4 mr-2" />
-                        Descargar Certificado
-                      </Button>
-                    )}
+                    
                     {enrollment.status === 'cancelled' && (
                       <Badge variant="error">Cancelada</Badge>
                     )}
