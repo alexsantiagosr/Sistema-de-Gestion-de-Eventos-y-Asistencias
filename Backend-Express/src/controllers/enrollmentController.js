@@ -171,8 +171,19 @@ const EnrollmentController = {
         return next(error);
       }
     }
-    if (req.user.role === 'admin' || req.user.role === 'staff') {
+    if (req.user.role === 'admin') {
       return EnrollmentController.checkIn(req, res, next);
+    }
+    if (req.user.role === 'staff') {
+      try {
+        const { id: enrollmentId } = req.params;
+        const result = await EnrollmentService.registerPhysicalCheckIn(enrollmentId);
+        return res.json(result);
+      } catch (error) {
+        if (error.code === 'NOT_FOUND') return res.status(404).json({ error: 'No encontrado', message: error.message });
+        if (error.code === 'ENROLLMENT_NOT_ACTIVE') return res.status(400).json({ error: 'No se puede registrar', message: error.message });
+        return next(error);
+      }
     }
     return res.status(403).json({
       error: 'Prohibido',
@@ -205,8 +216,19 @@ const EnrollmentController = {
         return next(error);
       }
     }
-    if (req.user.role === 'admin' || req.user.role === 'staff') {
+    if (req.user.role === 'admin') {
       return EnrollmentController.checkOut(req, res, next);
+    }
+    if (req.user.role === 'staff') {
+      try {
+        const { id: enrollmentId } = req.params;
+        const result = await EnrollmentService.registerPhysicalCheckOut(enrollmentId);
+        return res.json(result);
+      } catch (error) {
+        if (error.code === 'NOT_FOUND') return res.status(404).json({ error: 'No encontrado', message: error.message });
+        if (['NO_CHECKIN', 'ENROLLMENT_NOT_ACTIVE'].includes(error.code)) return res.status(400).json({ error: 'No se puede registrar', message: error.message });
+        return next(error);
+      }
     }
     return res.status(403).json({
       error: 'Prohibido',
