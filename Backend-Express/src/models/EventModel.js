@@ -205,7 +205,15 @@ const EventModel = {
 
     const newlyFinishedIds = eventsToFinish.map(e => e.id);
 
-    // 3. SOLO para esos eventos:
+    // 3. CERRAR SESIONES ABIERTAS y acumular active_seconds (FIX CRÍTICO)
+    // Esto asegura que estudiantes presenciales que nunca recibieron un segundo
+    // escaneo QR tengan su tiempo correctamente acumulado antes de evaluar certificación
+    const EventSessionModel = require('./EventSessionModel');
+    for (const eventId of newlyFinishedIds) {
+      await EventSessionModel.closeAllEventSessions(eventId);
+    }
+
+    // 4. SOLO para esos eventos:
     const { data: enrollmentsData } = await supabaseAdmin
       .from('enrollments')
       .select('id')
