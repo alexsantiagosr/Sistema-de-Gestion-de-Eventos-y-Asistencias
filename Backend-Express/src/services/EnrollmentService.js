@@ -281,11 +281,13 @@ const EnrollmentService = {
   },
 
   /**
-   * Check-in presencial (staff/admin via QR)
-   * Replica el flujo virtual: crea event_session + marca check_in + session_start
+   * Toggle de asistencia presencial (staff/admin via QR)
+   * Funciona como toggle: si hay sesión activa la cierra, si no hay la crea.
+   * NO marca check_out — eso solo lo hace autoFinishEvents o admin al finalizar.
    * @param {string} enrollmentId - UUID de la inscripción (obtenido del QR)
+   * @returns {Promise<Object>} Resultado con action: 'checked_in' | 'checked_out'
    */
-  async registerPhysicalCheckIn(enrollmentId) {
+  async togglePhysicalAttendance(enrollmentId) {
     const enrollment = await this.getEnrollment(enrollmentId);
 
     if (enrollment.status !== 'active' && enrollment.status !== 'completed') {
@@ -294,82 +296,54 @@ const EnrollmentService = {
       throw error;
     }
 
-    // No permitir doble check-in si ya hay sesión activa
-    const activeSession = await EventSessionModel.findActiveSession(enrollmentId);
-    if (activeSession) {
-      return {
-        message: 'Ya tiene una sesión activa en curso',
-        enrollment,
-        session: activeSession,
-        alreadyCheckedIn: true
-      };
-    }
-
-    const now = new Date().toISOString();
-
-    // Marcar check_in físico si es la primera vez
-    if (!enrollment.check_in) {
-      await EnrollmentModel.update(enrollmentId, { check_in: now });
-    }
-
-    // Crear sesión en event_sessions (igual que virtual)
-    const session = await EventSessionModel.create(enrollmentId);
-
-    return {
-      message: 'Entrada presencial registrada exitosamente',
-      enrollment,
-      session,
-      alreadyCheckedIn: false
-    };
-  },
-
-  /**
-   * Check-out presencial (staff/admin via QR)
-   * Cierra la sesión en event_sessions, calcula active_seconds y marca check_out
-   * @param {string} enrollmentId - UUID de la inscripción
-   */
-  async registerPhysicalCheckOut(enrollmentId) {
-    const enrollment = await this.getEnrollment(enrollmentId);
-
-    if (!enrollment.check_in) {
-      const error = new Error('Debe registrar entrada antes de la salida');
-      error.code = 'NO_CHECKIN';
-      throw error;
-    }
-
     // Buscar sesión activa
     const activeSession = await EventSessionModel.findActiveSession(enrollmentId);
 
-    if (!activeSession) {
+    if (activeSession) {
+      // ── HAY SESIÓN ACTIVA → CERRAR (salida temporal) ──
+      const endTime = new Date();
+      const startTime = new Date(activeSession.start_time);
+      const durationSeconds = Math.round((endTime.getTime() - startTime.getTime()) / 1000);
+
+      // Cerrar sesión en event_sessions
+      await EventSessionModel.closeSession(activeSession.id);
+
+      // Acumular active_seconds en la inscripción
+      if (durationSeconds > 0) {
+        await EnrollmentModel.addActiveSeconds(enrollmentId, durationSeconds);
+      }
+
+      // ⚠️ NO marcar check_out — solo se marca al finalizar evento
+
+      // Obtener active_seconds actualizado
+      const updated = await this.getEnrollment(enrollmentId);
+
       return {
-        message: 'No hay sesión activa para cerrar',
+        action: 'checked_out',
+        message: 'Salida temporal registrada',
+        enrollment: updated,
+        durationSeconds,
+        activeSeconds: updated.active_seconds || 0
+      };
+    } else {
+      // ── NO HAY SESIÓN ACTIVA → CREAR NUEVA (entrada) ──
+      const now = new Date().toISOString();
+
+      // Marcar check_in oficial si es la primera vez
+      if (!enrollment.check_in) {
+        await EnrollmentModel.update(enrollmentId, { check_in: now });
+      }
+
+      // Crear nueva sesión
+      const session = await EventSessionModel.create(enrollmentId);
+
+      return {
+        action: 'checked_in',
+        message: 'Entrada registrada exitosamente',
         enrollment,
-        alreadyCheckedOut: true
+        session
       };
     }
-
-    // Calcular duración antes de cerrar
-    const endTime = new Date();
-    const startTime = new Date(activeSession.start_time);
-    const durationSeconds = Math.round((endTime.getTime() - startTime.getTime()) / 1000);
-
-    // Cerrar sesión en event_sessions
-    await EventSessionModel.closeSession(activeSession.id);
-
-    // Acumular active_seconds en la inscripción
-    if (durationSeconds > 0) {
-      await EnrollmentModel.addActiveSeconds(enrollmentId, durationSeconds);
-    }
-
-    // Marcar check_out físico
-    await EnrollmentModel.update(enrollmentId, { check_out: endTime.toISOString() });
-
-    return {
-      message: 'Salida presencial registrada exitosamente',
-      enrollment,
-      durationSeconds,
-      alreadyCheckedOut: false
-    };
   },
 
 

@@ -1,4 +1,5 @@
 const EnrollmentService = require('../services/EnrollmentService');
+const EventSessionModel = require('../models/EventSessionModel');
 
 /**
  * Controlador de Inscripciones
@@ -122,6 +123,9 @@ const EnrollmentController = {
 
       const enrollment = await EnrollmentService.getByQrToken(qrToken);
 
+      // Buscar sesión activa para indicador visual en frontend
+      const activeSession = await EventSessionModel.findActiveSession(enrollment.id);
+
       res.json({
         valid: true,
         enrollment: {
@@ -130,7 +134,9 @@ const EnrollmentController = {
           user: enrollment.users,
           status: enrollment.status,
           check_in: enrollment.check_in,
-          check_out: enrollment.check_out
+          check_out: enrollment.check_out,
+          active_seconds: enrollment.active_seconds || 0,
+          has_active_session: !!activeSession
         }
       });
     } catch (error) {
@@ -177,7 +183,7 @@ const EnrollmentController = {
     if (req.user.role === 'staff') {
       try {
         const { id: enrollmentId } = req.params;
-        const result = await EnrollmentService.registerPhysicalCheckIn(enrollmentId);
+        const result = await EnrollmentService.togglePhysicalAttendance(enrollmentId);
         return res.json(result);
       } catch (error) {
         if (error.code === 'NOT_FOUND') return res.status(404).json({ error: 'No encontrado', message: error.message });
@@ -222,7 +228,7 @@ const EnrollmentController = {
     if (req.user.role === 'staff') {
       try {
         const { id: enrollmentId } = req.params;
-        const result = await EnrollmentService.registerPhysicalCheckOut(enrollmentId);
+        const result = await EnrollmentService.togglePhysicalAttendance(enrollmentId);
         return res.json(result);
       } catch (error) {
         if (error.code === 'NOT_FOUND') return res.status(404).json({ error: 'No encontrado', message: error.message });

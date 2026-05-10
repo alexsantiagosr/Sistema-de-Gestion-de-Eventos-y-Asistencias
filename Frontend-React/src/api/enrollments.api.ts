@@ -66,6 +66,18 @@ export const enrollmentsApi = {
     return response.data;
   },
 
+  /** Toggle presencial: entrada/salida temporal (staff — enrollmentId) */
+  togglePhysicalAttendance: async (enrollmentId: string) => {
+    const response = await axiosInstance.post<{
+      action: 'checked_in' | 'checked_out';
+      message: string;
+      enrollment: Enrollment;
+      durationSeconds?: number;
+      activeSeconds?: number;
+    }>(`/enrollments/${enrollmentId}/check-in`);
+    return response.data;
+  },
+
 
 
   // Obtener inscripciones de un evento (admin)
