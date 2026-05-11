@@ -31,6 +31,8 @@ export default function VirtualRoomPage() {
     (e) => e.event_id === eventId && (e.status === 'active' || e.status === 'completed')
   );
   
+  const isPhysicallyPresent = !!(currentEnrollment?.check_in && !currentEnrollment?.check_out);
+  
   const eventInfo = isAdmin ? eventDetailsData?.event : currentEnrollment?.events;
 
   // Variables para control de tiempo activo (HU-07)
@@ -53,7 +55,7 @@ export default function VirtualRoomPage() {
 
   // Control de tiempo activo (HU-07) - Solo para estudiantes
   useEffect(() => {
-    if (!eventId || isAdmin) return;
+    if (!eventId || isAdmin || isLoadingEnrollments || isPhysicallyPresent) return;
 
     let intervalId: NodeJS.Timeout | null = null;
 
@@ -138,11 +140,11 @@ export default function VirtualRoomPage() {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [eventId]);
+  }, [eventId, isAdmin, isLoadingEnrollments, isPhysicallyPresent]);
 
   // Detección robusta de cambio de pestaña (solo estudiantes)
   useEffect(() => {
-    if (isAdmin) return;
+    if (isAdmin || isLoadingEnrollments || isPhysicallyPresent) return;
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
@@ -160,7 +162,7 @@ export default function VirtualRoomPage() {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [isAdmin]);
+  }, [isAdmin, isLoadingEnrollments, isPhysicallyPresent]);
 
   // Expulsar estudiantes solo si la sala pasa a is_live = false
   useEffect(() => {
@@ -177,7 +179,7 @@ export default function VirtualRoomPage() {
       return;
     }
 
-    if (isAdmin) return;
+    if (isAdmin || isLoadingEnrollments || isPhysicallyPresent) return;
 
     const performCheckIn = async () => {
       try {
@@ -214,7 +216,7 @@ export default function VirtualRoomPage() {
       window.removeEventListener('beforeunload', handleWindowClose);
       performCheckOut();
     };
-  }, [eventId, navigate, isAdmin]);
+  }, [eventId, navigate, isAdmin, isLoadingEnrollments, isPhysicallyPresent]);
 
   // Validaciones
   if (!eventId) {
@@ -338,9 +340,16 @@ export default function VirtualRoomPage() {
       </div>
 
       {/* Alerta flotante de advertencia */}
-      {!isAdmin && showWarning && (
+      {!isAdmin && !isPhysicallyPresent && showWarning && (
         <div className="fixed bottom-4 right-4 bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-3 rounded-lg shadow-md z-50">
           Has salido de la sala. Esto puede afectar tu certificación.
+        </div>
+      )}
+
+      {/* Banner presencial */}
+      {!isAdmin && isPhysicallyPresent && (
+        <div className="bg-blue-100 border-b border-blue-200 px-4 py-2 text-center text-sm font-medium text-blue-800 shadow-sm">
+          Te encuentras registrado presencialmente
         </div>
       )}
 

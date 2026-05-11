@@ -63,6 +63,7 @@ export default function StaffScanPage() {
   const [cameraOn, setCameraOn] = useState(false);
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isEventFinished, setIsEventFinished] = useState(false);
   const [scanKey, setScanKey] = useState(0);
   const [enrollments, setEnrollments] = useState<any[]>([]);
   const [showList, setShowList] = useState(false);
@@ -92,6 +93,7 @@ export default function StaffScanPage() {
   // ── seleccionar evento ────────────────────────────────────────────────────
   const handleSelectEvent = (event: Event) => {
     setSelectedEvent(event);
+    setIsEventFinished(event.status === 'finished');
     setScanResult(null);
     setCameraOn(false);
     setScanKey((k) => k + 1);
@@ -180,6 +182,10 @@ export default function StaffScanPage() {
         if (showList) loadEnrollments(selectedEvent.id);
       } catch (err: any) {
         const msg = err?.response?.data?.message || 'Error al procesar el QR';
+        if (msg.toLowerCase().includes('no está activo')) {
+          setIsEventFinished(true);
+          setCameraOn(false);
+        }
         setScanResult({ type: 'error', title: 'Error', detail: msg, time: timeStr });
       } finally {
         setIsProcessing(false);
@@ -312,11 +318,11 @@ export default function StaffScanPage() {
                 )}
                 <button
                   onClick={toggleCamera}
-                  disabled={isProcessing}
+                  disabled={isProcessing || isEventFinished}
                   className={`flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-xl transition-all duration-200 ${
                     cameraOn
                       ? 'bg-red-500/20 text-red-300 hover:bg-red-500/30 border border-red-500/20'
-                      : 'bg-blue-500 text-white hover:bg-blue-600 shadow-lg shadow-blue-500/25'
+                      : 'bg-blue-500 text-white hover:bg-blue-600 shadow-lg shadow-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed'
                   }`}
                 >
                   {cameraOn ? (
@@ -384,12 +390,21 @@ export default function StaffScanPage() {
 
             {/* Scanner / Placeholder */}
             <div className="p-4">
-              {isProcessing && (
-                <div className="flex flex-col items-center justify-center py-12">
-                  <div className="w-12 h-12 rounded-full border-3 border-blue-500/30 border-t-blue-400 animate-spin" />
-                  <span className="mt-3 text-sm text-blue-300 font-medium">Procesando…</span>
+              {isEventFinished ? (
+                <div className="flex flex-col items-center justify-center py-12 text-slate-600">
+                  <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center mb-3 text-red-400">
+                    <XCircle className="w-8 h-8" />
+                  </div>
+                  <p className="text-sm text-slate-400 font-medium text-center">Este evento ha finalizado.<br/>El escáner ha sido deshabilitado.</p>
                 </div>
-              )}
+              ) : (
+                <>
+                  {isProcessing && (
+                    <div className="flex flex-col items-center justify-center py-12">
+                      <div className="w-12 h-12 rounded-full border-3 border-blue-500/30 border-t-blue-400 animate-spin" />
+                      <span className="mt-3 text-sm text-blue-300 font-medium">Procesando…</span>
+                    </div>
+                  )}
 
               {cameraOn && !isProcessing && !scanResult && (
                 <div className="relative">
@@ -446,6 +461,8 @@ export default function StaffScanPage() {
                     </button>
                   </div>
                 </div>
+              )}
+                </>
               )}
             </div>
           </div>
