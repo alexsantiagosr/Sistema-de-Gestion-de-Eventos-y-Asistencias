@@ -10,7 +10,9 @@ import { useAuth } from '@/context/AuthContext';
 
 export default function CertificatesPage() {
   const { data: certificatesData, isLoading } = useMyCertificates();
-  const certificates = certificatesData?.certificates || [];
+  const certificates = [...(certificatesData?.certificates || [])].sort(
+    (a, b) => new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime()
+  );
   const { user } = useAuth();
 
   if (user?.role === 'admin') {

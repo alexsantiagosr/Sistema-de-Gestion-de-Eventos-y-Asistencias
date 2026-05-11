@@ -39,10 +39,10 @@ export default function ManageEventsPage() {
   const updateStatusMutation = useUpdateEventStatus();
   const startRoomMutation = useStartVirtualRoom();
 
-  // Filtrar por búsqueda
-  const events = eventsData?.events.filter((event) => {
-    return event.title.toLowerCase().includes(searchTerm.toLowerCase());
-  }) || [];
+  // Filtrar por búsqueda y ordenar por fecha de creación descendente
+  const events = [...(eventsData?.events || [])]
+    .filter((event) => event.title.toLowerCase().includes(searchTerm.toLowerCase()))
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
   const handleDelete = async () => {
     if (!eventToDelete) return;

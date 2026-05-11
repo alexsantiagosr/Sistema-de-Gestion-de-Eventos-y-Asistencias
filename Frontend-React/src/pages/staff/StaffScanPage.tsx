@@ -415,6 +415,38 @@ export default function StaffScanPage() {
                   <p className="text-sm text-slate-500">Presiona "Encender" para activar la cámara</p>
                 </div>
               )}
+
+              {/* Ingreso manual */}
+              {!isProcessing && (
+                <div className="mt-4 pt-4 border-t border-white/5">
+                  <p className="text-[11px] text-slate-500 mb-2 uppercase tracking-wider font-semibold">Ingreso manual de código</p>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Escribe el token QR..."
+                      className="flex-1 bg-slate-700/50 border border-white/5 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-400/50"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                          handleScan(e.currentTarget.value.trim());
+                          e.currentTarget.value = '';
+                        }
+                      }}
+                    />
+                    <button
+                      className="px-4 py-2 bg-slate-700/50 hover:bg-slate-600/50 text-slate-300 text-sm font-medium rounded-xl transition-colors border border-white/5"
+                      onClick={(e) => {
+                        const input = e.currentTarget.previousElementSibling as HTMLInputElement;
+                        if (input.value.trim()) {
+                          handleScan(input.value.trim());
+                          input.value = '';
+                        }
+                      }}
+                    >
+                      Validar
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

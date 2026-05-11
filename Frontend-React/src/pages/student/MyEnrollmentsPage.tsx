@@ -48,7 +48,9 @@ export default function MyEnrollmentsPage() {
     );
   }
 
-  const enrollments = enrollmentsData?.enrollments || [];
+  const enrollments = [...(enrollmentsData?.enrollments || [])].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
 
   const handleViewQR = async (enrollmentId: string) => {
     try {

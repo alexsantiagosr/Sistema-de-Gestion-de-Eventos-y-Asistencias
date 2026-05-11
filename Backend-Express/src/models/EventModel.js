@@ -25,7 +25,7 @@ const EventModel = {
           email
         )
       `)
-      .order('date', { ascending: true });
+      .order('created_at', { ascending: false });
 
     if (status) {
       query = query.eq('status', status);
@@ -177,7 +177,7 @@ const EventModel = {
       .eq('status', 'active')
       .gt('available_slots', 0)
       .gte('date', new Date().toISOString())
-      .order('date', { ascending: true });
+      .order('created_at', { ascending: false });
 
     if (error) throw error;
     return data || [];

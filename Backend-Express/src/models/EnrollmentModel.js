@@ -247,7 +247,7 @@ const EnrollmentModel = {
         )
       `)
       .eq('event_id', eventId)
-      .order('created_at', { ascending: true });
+      .order('created_at', { ascending: false });
 
     if (error) throw error;
     return data || [];

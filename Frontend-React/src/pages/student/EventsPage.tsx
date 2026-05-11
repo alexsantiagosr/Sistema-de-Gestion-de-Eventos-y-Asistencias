@@ -26,12 +26,14 @@ export default function EventsPage() {
 
   const myEnrollments = myEnrollmentsData?.enrollments || [];
 
-  // Filtrar eventos
-  const events = eventsData?.events.filter((event) => {
-    const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesModality = !modalityFilter || event.modality === modalityFilter;
-    return matchesSearch && matchesModality;
-  }) || [];
+  // Filtrar eventos y ordenar por fecha de creación descendente
+  const events = [...(eventsData?.events || [])]
+    .filter((event) => {
+      const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesModality = !modalityFilter || event.modality === modalityFilter;
+      return matchesSearch && matchesModality;
+    })
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
   const handleEnroll = async (eventId: string, eventTitle: string) => {
     setEnrollingId(eventId);

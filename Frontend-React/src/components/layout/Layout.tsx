@@ -8,11 +8,12 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true);
 
   return (
     <div className="flex h-screen overflow-hidden">
       {/* Sidebar desktop - fijo a la izquierda */}
-      <aside className="hidden lg:flex lg:flex-shrink-0 w-64 flex-col bg-primary">
+      <aside className={`${desktopSidebarOpen ? 'lg:flex lg:flex-shrink-0' : 'hidden'} hidden w-64 flex-col bg-primary transition-all duration-300`}>
         <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
       </aside>
 
@@ -23,7 +24,7 @@ export default function Layout({ children }: LayoutProps) {
             className="fixed inset-0 bg-black/50 z-40 lg:hidden"
             onClick={() => setSidebarOpen(false)}
           />
-          <aside className="fixed inset-y-0 left-0 z-50 w-64 lg:hidden">
+          <aside className="fixed inset-y-0 left-0 z-50 w-64 lg:hidden bg-primary flex flex-col">
             <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
           </aside>
         </>
@@ -33,7 +34,10 @@ export default function Layout({ children }: LayoutProps) {
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         {/* Navbar - arriba del contenido */}
         <header className="flex-shrink-0 h-16 bg-white border-b border-gray-200">
-          <Navbar onMenuClick={() => setSidebarOpen(true)} />
+          <Navbar 
+            onMenuClick={() => setSidebarOpen(true)} 
+            onDesktopMenuClick={() => setDesktopSidebarOpen(!desktopSidebarOpen)}
+          />
         </header>
 
         {/* Contenido principal - scrolleable */}

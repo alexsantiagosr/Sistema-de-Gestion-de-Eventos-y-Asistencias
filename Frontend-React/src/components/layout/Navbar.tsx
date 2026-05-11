@@ -4,19 +4,29 @@ import Button from '@/components/ui/Button';
 
 interface NavbarProps {
   onMenuClick: () => void;
+  onDesktopMenuClick?: () => void;
 }
 
-export default function Navbar({ onMenuClick }: NavbarProps) {
+export default function Navbar({ onMenuClick, onDesktopMenuClick }: NavbarProps) {
   const { user, logout } = useAuth();
 
   return (
     <div className="h-full flex items-center justify-between px-4 sm:px-6">
-      {/* Left side - Hamburger menu (mobile only) */}
+      {/* Left side - Hamburger menu */}
       <div className="flex items-center">
+        {/* Mobile menu button */}
         <button
           className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors mr-3"
           onClick={onMenuClick}
-          aria-label="Toggle menu"
+          aria-label="Toggle mobile menu"
+        >
+          <Menu className="h-5 w-5 text-gray-600" />
+        </button>
+        {/* Desktop menu button */}
+        <button
+          className="hidden lg:block p-2 rounded-lg hover:bg-gray-100 transition-colors mr-3"
+          onClick={onDesktopMenuClick}
+          aria-label="Toggle desktop menu"
         >
           <Menu className="h-5 w-5 text-gray-600" />
         </button>

@@ -274,9 +274,8 @@ const CertificateService = {
     doc.fillColor(c.subtle);
 
     const detailParts = [
-      `📅 ${this.formatDate(enrollment.event.date)}`,
-      `⏱ ${enrollment.event.duration} minutos`,
-      `📍 ${this.capitalize(enrollment.event.modality)}${enrollment.event.location ? ' — ' + enrollment.event.location : ''}`
+      this.formatDate(enrollment.event.date),
+      `${this.capitalize(enrollment.event.modality)}${enrollment.event.location ? ' — ' + enrollment.event.location : ''}`
     ];
 
     doc.text(detailParts.join('     |     '), 60, detailY, {
@@ -291,55 +290,7 @@ const CertificateService = {
       });
     }
 
-    // ─── 13. BADGE DE ASISTENCIA ───
-    const badgeCenterX = width / 2;
-    const badgeY = 395;
-    const badgeRadius = 42;
-
-    // Círculo exterior (gold)
-    doc.lineWidth(3);
-    doc.strokeColor(c.gold);
-    doc.circle(badgeCenterX, badgeY + badgeRadius, badgeRadius).stroke();
-
-    // Círculo interior (navy)
-    doc.lineWidth(1.5);
-    doc.strokeColor(c.navy);
-    doc.circle(badgeCenterX, badgeY + badgeRadius, badgeRadius - 5).stroke();
-
-    // Fondo del badge
-    doc.circle(badgeCenterX, badgeY + badgeRadius, badgeRadius - 7).fill(c.navy);
-
-    // Porcentaje
-    doc.fillColor(c.gold);
-    doc.fontSize(24);
-    doc.font('Helvetica-Bold');
-    doc.text(`${eligibility.percentage}%`, badgeCenterX - 40, badgeY + badgeRadius - 16, {
-      align: 'center',
-      width: 80
-    });
-
-    // Texto "ASISTENCIA"
-    doc.fillColor(c.white);
-    doc.fontSize(7);
-    doc.font('Helvetica');
-    doc.text('ASISTENCIA', badgeCenterX - 40, badgeY + badgeRadius + 12, {
-      align: 'center',
-      width: 80,
-      characterSpacing: 1.5
-    });
-
-    // Etiquetas laterales del badge
-    doc.fillColor(c.subtle);
-    doc.fontSize(8.5);
-    doc.font('Helvetica');
-    doc.text(`Tiempo activo: ${eligibility.duration_attended} min`, badgeCenterX - 200, badgeY + badgeRadius - 5, {
-      align: 'right',
-      width: 140
-    });
-    doc.text(`Mínimo requerido: ${eligibility.min_required}%`, badgeCenterX + 60, badgeY + badgeRadius - 5, {
-      align: 'left',
-      width: 160
-    });
+    // ─── 13. (SECCIÓN DE ASISTENCIA REMOVIDA PARA DISEÑO MÁS LIMPIO) ───
 
     // ─── 14. FIRMAS ───
     const sigY = height - 140;
@@ -419,9 +370,7 @@ const CertificateService = {
       timeZone: 'America/Bogota',
       year: 'numeric',
       month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+      day: 'numeric'
     });
   },
 
