@@ -23,6 +23,8 @@ import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
 import ManageEventsPage from '@/pages/admin/ManageEventsPage';
 import CreateEditEventPage from '@/pages/admin/CreateEditEventPage';
 import EventAttendancePage from '@/pages/admin/EventAttendancePage';
+import ReportsDashboardPage from '@/pages/admin/ReportsDashboardPage';
+import AttendanceControlPage from '@/pages/admin/AttendanceControlPage';
 
 // Staff pages
 import StaffScanPage from '@/pages/staff/StaffScanPage';
@@ -63,6 +65,8 @@ function App() {
               <Route path="/admin/events/new" element={<Layout><CreateEditEventPage /></Layout>} />
               <Route path="/admin/events/:id/edit" element={<Layout><CreateEditEventPage /></Layout>} />
               <Route path="/admin/events/:id/attendance" element={<Layout><EventAttendancePage /></Layout>} />
+              <Route path="/admin/reports" element={<Layout><ReportsDashboardPage /></Layout>} />
+              <Route path="/admin/attendance-control" element={<Layout><AttendanceControlPage /></Layout>} />
             </Route>
 
             {/* Protected staff routes */}

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Calendar, Plus, Ticket, CheckCircle, TrendingUp } from 'lucide-react';
+import { Calendar, Plus, Ticket, CheckCircle, TrendingUp, BarChart2, ShieldCheck } from 'lucide-react';
 import { useEvents } from '@/hooks/useEvents';
 import Spinner from '@/components/ui/Spinner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -155,17 +155,31 @@ export default function AdminDashboardPage() {
           <CardContent>
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <Link to="/admin/events/new">
-                <div className="p-3 sm:p-4 bg-primary/10 rounded-xl hover:bg-primary/20 transition-colors cursor-pointer">
+                <div className="p-3 sm:p-4 bg-primary/10 rounded-xl hover:bg-primary/20 transition-colors cursor-pointer h-full">
                   <Plus className="w-6 h-6 sm:w-8 sm:h-8 text-primary mb-2" />
                   <p className="font-medium text-gray-900 text-sm sm:text-base">Crear Evento</p>
                   <p className="text-xs sm:text-sm text-secondary mt-1">Nuevo evento</p>
                 </div>
               </Link>
               <Link to="/admin/events">
-                <div className="p-3 sm:p-4 bg-green-100 rounded-xl hover:bg-green-200 transition-colors cursor-pointer">
+                <div className="p-3 sm:p-4 bg-green-100 rounded-xl hover:bg-green-200 transition-colors cursor-pointer h-full">
                   <Calendar className="w-6 h-6 sm:w-8 sm:h-8 text-green-600 mb-2" />
                   <p className="font-medium text-gray-900 text-sm sm:text-base">Gestionar</p>
                   <p className="text-xs sm:text-sm text-secondary mt-1">Todos los eventos</p>
+                </div>
+              </Link>
+              <Link to="/admin/reports">
+                <div className="p-3 sm:p-4 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors cursor-pointer h-full">
+                  <BarChart2 className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 mb-2" />
+                  <p className="font-medium text-gray-900 text-sm sm:text-base">Reportes</p>
+                  <p className="text-xs sm:text-sm text-secondary mt-1">Comparar inscritos vs asistentes</p>
+                </div>
+              </Link>
+              <Link to="/admin/attendance-control">
+                <div className="p-3 sm:p-4 bg-amber-50 rounded-xl hover:bg-amber-100 transition-colors cursor-pointer h-full">
+                  <ShieldCheck className="w-6 h-6 sm:w-8 sm:h-8 text-amber-600 mb-2" />
+                  <p className="font-medium text-gray-900 text-sm sm:text-base">Control de Asistencia</p>
+                  <p className="text-xs sm:text-sm text-secondary mt-1">Configurar y verificar progreso</p>
                 </div>
               </Link>
             </div>

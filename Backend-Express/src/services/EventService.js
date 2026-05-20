@@ -222,6 +222,13 @@ const EventService = {
       throw error;
     }
 
+    // Si actualiza porcentaje mínimo de asistencia
+    if (updates.min_attendance_percentage !== undefined && (updates.min_attendance_percentage < 1 || updates.min_attendance_percentage > 100)) {
+      const error = new Error('El porcentaje mínimo de asistencia debe estar entre 1 y 100');
+      error.code = 'INVALID_ATTENDANCE';
+      throw error;
+    }
+
     return await EventModel.update(id, updates);
   },
 

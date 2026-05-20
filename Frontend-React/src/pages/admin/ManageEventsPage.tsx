@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, Search, Edit2, Eye, CheckCircle, Trash2, Play } from 'lucide-react';
+import { Plus, Search, Edit2, Eye, CheckCircle, Trash2, Play, BarChart2, ShieldCheck } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useEvents, useDeleteEvent, useUpdateEventStatus, useStartVirtualRoom } from '@/hooks/useEvents';
@@ -233,8 +233,27 @@ export default function ManageEventsPage() {
                             size="sm"
                             onClick={() => navigate(`/admin/events/${event.id}/attendance`)}
                             className="inline-flex"
+                            title="Registrar Asistencias"
                           >
                             <CheckCircle className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => navigate(`/admin/attendance-control?eventId=${event.id}`)}
+                            className="inline-flex text-success hover:bg-green-50"
+                            title="Control y Configuración de Asistencia"
+                          >
+                            <ShieldCheck className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => navigate(`/admin/reports?eventId=${event.id}`)}
+                            className="inline-flex text-blue-600 hover:bg-blue-50"
+                            title="Reporte Comparativo"
+                          >
+                            <BarChart2 className="w-4 h-4" />
                           </Button>
                           <Button
                             variant="ghost"

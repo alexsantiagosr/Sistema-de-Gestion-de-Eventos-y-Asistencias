@@ -7,6 +7,8 @@ import {
   Settings,
   FileText,
   X,
+  BarChart2,
+  ShieldCheck,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
@@ -26,6 +28,8 @@ const studentLinks = [
 const adminLinks = [
   { to: '/dashboard', label: 'Panel de administración', icon: LayoutDashboard },
   { to: '/admin/events', label: 'Gestionar eventos', icon: Calendar },
+  { to: '/admin/reports', label: 'Reportes comparativos', icon: BarChart2 },
+  { to: '/admin/attendance-control', label: 'Control de asistencia', icon: ShieldCheck },
 ];
 
 export default function Sidebar({ setSidebarOpen }: SidebarProps) {
