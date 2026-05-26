@@ -1,139 +1,98 @@
-# SGEA Frontend
+# SGEH Frontend - SPA React
 
-Sistema de Gestión de Eventos y Asistencias - Frontend
+Subproyecto que conforma la interfaz de usuario del **Sistema de Gestión de Eventos y Asistencias**. Desarrollado con velocidad y escalabilidad en mente, utiliza Vite como empaquetador y TanStack Query para el almacenamiento en caché del servidor.
 
-## 🚀 Inicio Rápido
+## 🚀 Inicio Rápido de Desarrollo
 
 ### Prerrequisitos
-- Node.js 18+
-- Backend corriendo en http://localhost:5000
+- Node.js 20+
+- Servidor Backend (API Express) ejecutándose en `http://localhost:5000`
 
-### Instalación
+### Instalación Local
 
 ```bash
-# Instalar dependencias
+# Instalar todas las dependencias
 npm install
 
-# Iniciar servidor de desarrollo
+# Iniciar servidor de desarrollo con Hot Module Replacement (HMR)
 npm run dev
 ```
 
-El frontend estará disponible en http://localhost:3000
+El frontend estará disponible típicamente en **http://localhost:5173**.
 
-## 📁 Estructura del Proyecto
+## 📁 Arquitectura del Cliente
 
 ```
 src/
-├── api/                    # Funciones de API por módulo
-│   ├── axios.ts           # Configuración de Axios
-│   ├── auth.api.ts
-│   ├── events.api.ts
-│   ├── enrollments.api.ts
-│   ├── qr.api.ts
-│   └── certificates.api.ts
+├── api/                    # Integraciones HTTP con Axios (auth, events, qr, etc.)
 ├── components/
-│   ├── ui/                # Componentes base reutilizables
-│   │   ├── Button.tsx
-│   │   ├── Input.tsx
-│   │   ├── Modal.tsx
-│   │   ├── Badge.tsx
-│   │   ├── Card.tsx
-│   │   ├── Spinner.tsx
-│   │   └── Table.tsx
-│   ├── layout/            # Componentes de layout
-│   │   ├── Sidebar.tsx
-│   │   ├── Navbar.tsx
-│   │   └── Layout.tsx
-│   └── features/          # Componentes específicos del dominio
+│   ├── ui/                 # Botones, Modales, Tablas genéricos
+│   ├── layout/             # Sidebar, Navbar, Layout estructural
+│   └── features/           # Lógica fragmentada del dominio (ej. Scanner QR)
+├── context/                # Contextos globales (AuthContext)
+├── guards/                 # Middlewares de ruteo en cliente (Private, Admin, Staff)
+├── hooks/                  # Hooks personalizados de React Query para mutaciones asíncronas
 ├── pages/
-│   ├── auth/              # Páginas de autenticación
-│   │   ├── LoginPage.tsx
-│   │   └── RegisterPage.tsx
-│   ├── student/           # Páginas de estudiante
-│   │   ├── DashboardPage.tsx
-│   │   ├── EventsPage.tsx
-│   │   ├── MyEnrollmentsPage.tsx
-│   │   └── CertificatesPage.tsx
-│   └── admin/             # Páginas de administrador
-│       ├── AdminDashboardPage.tsx
-│       └── ManageEventsPage.tsx
-├── hooks/                 # Custom hooks
-│   ├── useEvents.ts
-│   ├── useEnrollments.ts
-│   └── useCertificates.ts
-├── context/
-│   └── AuthContext.tsx    # Contexto de autenticación
-├── guards/
-│   ├── PrivateRoute.tsx   # Ruta protegida (requiere auth)
-│   └── AdminRoute.tsx     # Ruta solo admin
-├── types/
-│   └── index.ts           # Tipos TypeScript
-├── utils/                 # Utilidades
-└── lib/
-    └── utils.ts           # Utilidades de Tailwind
+│   ├── auth/               # Inicio de sesión y registro
+│   ├── student/            # Catálogo, inscripciones, y sala virtual para estudiantes
+│   ├── admin/              # Panel gerencial y CRUD de eventos
+│   └── staff/              # Interfaz dedicada para lectura QR presencial
+├── types/                  # Interfaces de datos y tipado estricto
+└── utils/                  # Herramientas utilitarias puras
 ```
 
-## 🎨 Stack Tecnológico
+## 🎨 Stack Tecnológico y Librerías
 
-- **React 18** - UI library
-- **TypeScript** - Tipado estático
-- **Tailwind CSS** - Estilos
-- **React Router v6** - Navegación
-- **TanStack Query** - Gestión de estado del servidor
-- **React Hook Form + Zod** - Formularios y validaciones
-- **Lucide React** - Iconos
-- **Sonner** - Notificaciones toast
-- **Axios** - Cliente HTTP
-- **date-fns** - Utilidades de fecha
+- **Core:** React 18, TypeScript, Vite.
+- **Routing:** React Router DOM v6.
+- **Gestión de Estado Asíncrono:** TanStack Query (React Query) v5.
+- **Diseño UI:** Tailwind CSS v3, Lucide React (íconos), Sonner (Toasts de notificación).
+- **Control de Formularios:** React Hook Form emparejado con validadores semánticos Zod.
+- **Hardware Integrado:** `html5-qrcode` para lectura dinámica en vivo mediante cámara de dispositivos.
 
-## 🔐 Autenticación
+## 🔐 Autenticación y Flujo JWT
 
-El sistema usa JWT para autenticación:
+1. El servidor provee un token JWT al validar credenciales en login.
+2. El cliente almacena en memoria/localStorage el token.
+3. Un interceptor HTTP global en `src/api/axios.ts` añade la cabecera `Authorization: Bearer <token>` a cada solicitud.
+4. Si la sesión caduca y el servidor emite un HTTP 401, el cliente destruye la sesión gráfica y empuja al usuario a la vista de `/login`.
 
-1. El token se guarda en `localStorage`
-2. Axios interceptor agrega automáticamente el header `Authorization: Bearer <token>`
-3. Si el token expira (401), se limpia localStorage y redirige a `/login`
+> [!NOTE]
+> Para el cierre de "Sala Virtual" (`beforeunload`), el navegador no siempre puede enviar *headers* de autenticación en la limpieza del documento. Para esto, se implementa una inyección del token vía Query Parameters (`?token=`) ejecutada por `navigator.sendBeacon`.
 
-## 📱 Roles
+## 📱 Permisos y Roles en React Router
 
-### Student
-- `/dashboard` - Dashboard principal
-- `/events` - Explorar eventos
-- `/my-enrollments` - Mis inscripciones
-- `/certificates` - Certificados
+### Estudiante (`student`)
+- Explora eventos.
+- Se inscribe y genera QR personales.
+- Entra en salas virtuales e interactúa con certificados de conclusión.
 
-### Admin
-- `/admin` - Dashboard admin
-- `/admin/events` - Gestión de eventos
-- `/admin/attendances` - Control de asistencias
+### Administrador (`admin`)
+- Control estadístico en el Dashboard.
+- Creador y gestor principal del CRUD de Eventos.
+
+### Personal de Apoyo (`staff`)
+- Operador de acceso. Vista simplificada de lectura QR enfocada en marcar entradas al evento presencial (`/staff/scan`).
 
 ## 🔧 Variables de Entorno
 
 ```env
+# URL apuntando a la API Express
 VITE_API_URL=http://localhost:5000/api
 ```
 
-## 📝 Comandos Disponibles
+## 📝 Comandos de NPM
 
 ```bash
-# Desarrollo
+# Levantar servidor de desarrollo
 npm run dev
 
-# Build producción
+# Construir bundler estático para producción (salida en /dist)
 npm run build
 
-# Preview build
+# Previsualizar el bundle de producción
 npm run preview
 
-# Lint
+# Ejecutar el analizador de sintaxis TypeScript y Linter
 npm run lint
 ```
-
-## 🎯 Próximos Pasos
-
-1. ✅ Configuración del proyecto - COMPLETADO
-2. ✅ Auth (Login/Register) - COMPLETADO  
-3. ⏳ Páginas de Student (completar funcionalidad)
-4. ⏳ Páginas de Admin (completar funcionalidad)
-5. ⏳ Componentes de features (EventCard, QRModal, etc.)
-6. ⏳ Integración completa con backend

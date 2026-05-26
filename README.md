@@ -1,269 +1,191 @@
-# 🎓 SGEA - Sistema de Gestión de Eventos y Asistencias
+# 🎓 SGEH - Sistema de Gestión de Eventos y Asistencias
 
 [![Status](https://img.shields.io/badge/status-production%20ready-green)]()
 [![License](https://img.shields.io/badge/license-MIT-blue)]()
 
-Sistema full-stack para gestionar eventos y control de asistencias mediante códigos QR.
+SGEH es una plataforma full-stack profesional diseñada para gestionar **eventos en modalidades presencial, virtual e híbrida**. El sistema automatiza el control de inscripciones, el registro preciso de asistencias y la emisión de certificados.
 
 ---
 
 ## 📋 Tabla de Contenidos
 
 - [Características](#-características)
-- [Tecnologías](#-tecnologías)
-- [Arquitectura](#-arquitectura)
+- [Accesos del Sistema](#-accesos-del-sistema)
+- [Arquitectura General](#-arquitectura-general)
+- [Tecnologías Utilizadas](#-tecnologías-utilizadas)
+- [Sistema de Asistencia Híbrida](#-sistema-de-asistencia-híbrida)
+- [Roles del Sistema](#-roles-del-sistema)
+- [Estructura del Proyecto](#-estructura-del-proyecto)
 - [Inicio Rápido](#-inicio-rápido)
-- [Documentación](#-documentación)
-- [Deploy](#-deploy)
 
 ---
 
 ## ✨ Características
 
-### 👨‍🎓 Para Estudiantes
-
-- ✅ Explorar eventos disponibles
-- ✅ Inscripción con un click
-- ✅ Código QR único por inscripción
-- ✅ Control de asistencia (check-in/check-out)
-- ✅ Certificados PDF automáticos
-- ✅ Dashboard personalizado
-
-### 👨‍💼 Para Administradores
-
-- ✅ Gestión completa de eventos (CRUD)
-- ✅ Control de cupos en tiempo real
-- ✅ Escáner de QR para asistencias
-- ✅ Reportes y estadísticas
-- ✅ Exportación a CSV
-- ✅ Dashboard con métricas
-
-### 🔒 Seguridad
-
-- ✅ Autenticación JWT
-- ✅ Contraseñas encriptadas (bcrypt)
-- ✅ Roles de usuario (admin/student)
-- ✅ Validación de datos con Zod
+- ✅ **Modalidades Híbridas:** Soporte integral para eventos presenciales y virtuales.
+- ✅ **Asistencia Virtual Precisa:** Cálculo exacto de tiempo de conexión mediante `active_seconds`.
+- ✅ **Escáner QR Integrado:** Control de acceso rápido en eventos presenciales para el personal.
+- ✅ **Automatización Inteligente:** Cierre automático de eventos y cálculo de tiempos.
+- ✅ **Certificación Autónoma:** Emisión de PDFs dinámicos basada en reglas de validación de asistencia.
 
 ---
 
-## 🛠️ Tecnologías
+## 🌐 Accesos del Sistema
 
-### Backend
+### Acceso Producción
 
-| Tecnología | Versión | Propósito |
-|------------|---------|-----------|
-| Node.js | 20.x | Runtime |
-| Express | 4.x | Framework web |
-| PostgreSQL | - | Base de datos |
-| Supabase | - | Cloud PostgreSQL |
-| JWT | - | Autenticación |
-| bcrypt | - | Encriptación |
+| Servicio            | URL                                                         |
+| ------------------- | ----------------------------------------------------------- |
+| Frontend Producción | https://sistema-de-gestion-de-eventos-y-asi-one.vercel.app/ |
+| Backend Producción  | https://sistema-de-gestion-de-eventos-y-x11t.onrender.com   |
 
-### Frontend
+### Entorno Local
 
-| Tecnología | Versión | Propósito |
-|------------|---------|-----------|
-| React | 18.x | UI Library |
-| TypeScript | 5.x | Tipado estático |
-| Tailwind CSS | 3.x | Estilos |
-| React Router | 6.x | Navegación |
-| TanStack Query | 5.x | Estado del servidor |
-| React Hook Form | 7.x | Formularios |
-| Zod | 3.x | Validaciones |
+| Servicio       | URL                   |
+| -------------- | --------------------- |
+| Frontend Local | http://localhost:5173 |
+| Backend Local  | http://localhost:3001 |
 
-### DevOps
-
-| Tecnología | Propósito |
-|------------|-----------|
-| Docker | Contenedores |
-| Docker Compose | Orquestación |
-| Nginx | Web server (prod) |
+*(Nota: En despliegues locales con Docker, el frontend puede estar expuesto en el puerto 80).*
 
 ---
 
-## 🏗️ Arquitectura
+## 🏗️ Arquitectura General
+
+El proyecto sigue una arquitectura **Cliente-Servidor (SPA + REST API)** apoyada por un BaaS (Backend-as-a-Service).
+
+*   **Frontend (Cliente):** Aplicación de una sola página (SPA) desarrollada con **React y TypeScript**. Se compila con Vite y se despliega globalmente en la CDN de **Vercel**.
+*   **Backend (Servidor):** API RESTful desarrollada con **Node.js y Express.js**. Desplegado como Web Service en **Render**.
+*   **Base de Datos:** Instancia relacional de **PostgreSQL** alojada y gestionada en **Supabase**, aprovechando Row Level Security (RLS) y funciones RPC nativas.
+
+---
+
+## 🛠️ Tecnologías Utilizadas
+
+**Frontend:**
+- React (v18)
+- TypeScript
+- Vite
+- Tailwind CSS
+- TanStack Query (React Query)
+- html5-qrcode
+
+**Backend & Datos:**
+- Node.js
+- Express.js
+- PostgreSQL
+- Supabase (PostgREST / SDK)
+- JWT (JSON Web Tokens)
+- bcrypt
+- PDFKit
+
+**DevOps & Cloud:**
+- Docker & Docker Compose
+- Vercel (Hosting Frontend)
+- Render (Hosting Backend)
+
+---
+
+## 🔄 Sistema de Asistencia Híbrida
+
+SGEH resuelve la complejidad de la asistencia en eventos mixtos combinando dos aproximaciones en un solo modelo de datos:
+
+1. **Asistencia Presencial (Vía QR):**
+   - El estudiante inscrito genera un código QR personal.
+   - El rol `Staff` utiliza el escáner de la plataforma en la entrada física del evento para registrar la asistencia.
+2. **Asistencia Virtual (Vía Sesiones):**
+   - El estudiante accede a la "Sala Virtual" desde su panel.
+   - El sistema registra de manera invisible la entrada y salida, creando "sesiones virtuales".
+   - Al salir o cerrar la pestaña, se calcula el tiempo y se acumula en la variable **`active_seconds`**.
+3. **Validación Automática para Certificados:**
+   - Una vez que la duración del evento expira, el sistema cierra automáticamente el evento y todas las sesiones abiertas. Evalúa el tiempo total presencial o virtual y genera los certificados de los usuarios elegibles.
+
+---
+
+## 👥 Roles del Sistema
+
+El acceso y las funcionalidades están controlados estrictamente mediante 3 roles:
+
+### 1. `admin` (Administrador)
+Gestor principal de la plataforma.
+- Crea, edita y finaliza eventos.
+- Monitoriza estadísticas de asistencia e inscripciones.
+- Inicia sesiones de sala virtual.
+
+### 2. `student` (Estudiante / Asistente)
+Usuario consumidor de los eventos.
+- Explora el catálogo de eventos disponibles.
+- Gestiona sus inscripciones.
+- Ingresa a salas virtuales o presenta su código QR.
+- Descarga sus certificados de asistencia.
+
+### 3. `staff` (Personal de Apoyo)
+Rol especializado para la logística en eventos presenciales.
+- Accede a un panel limpio de Escaneo QR.
+- Su única y principal función es validar entradas presenciales rápidamente a través de la cámara de su dispositivo.
+
+---
+
+## 📁 Estructura del Proyecto
+
+El repositorio sigue una organización modular de dos componentes principales:
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                    CLIENTE                          │
-│              (React + TypeScript)                   │
-│                                                     │
-│  ┌──────────┐  ┌──────────┐  ┌──────────────────┐ │
-│  │  Admin   │  │ Student  │  │   Auth (JWT)     │ │
-│  │ Dashboard│  │ Dashboard│  │                  │ │
-│  └──────────┘  └──────────┘  └──────────────────┘ │
-└─────────────────────────────────────────────────────┘
-                         │
-                         │ HTTP/REST
-                         ▼
-┌─────────────────────────────────────────────────────┐
-│                   BACKEND API                       │
-│                (Node.js + Express)                  │
-│                                                     │
-│  ┌──────────┐  ┌──────────┐  ┌──────────────────┐ │
-│  │   Auth   │  │  Events  │  │  Enrollments     │ │
-│  │  Module  │  │  Module  │  │     Module       │ │
-│  └──────────┘  └──────────┘  └──────────────────┘ │
-│  ┌──────────┐  ┌──────────┐  ┌──────────────────┐ │
-│  │    QR    │  │Certificates│ │    Reports      │ │
-│  │  Module  │  │  Module   │ │    Module        │ │
-│  └──────────┘  └──────────┘  └──────────────────┘ │
-└─────────────────────────────────────────────────────┘
-                         │
-                         │ PostgreSQL Protocol
-                         ▼
-┌─────────────────────────────────────────────────────┐
-│                  BASE DE DATOS                      │
-│              (Supabase - PostgreSQL)                │
-│                                                     │
-│  ┌──────────┐  ┌──────────┐  ┌──────────────────┐ │
-│  │  users   │  │  events  │  │   enrollments    │ │
-│  │  table   │  │  table   │  │     table        │ │
-│  └──────────┘  └──────────┘  └──────────────────┘ │
-└─────────────────────────────────────────────────────┘
+Sistema-de-Gestion-de-Eventos-y-Asistencias/
+│
+├── Backend-Express/       # API REST (Node.js/Express)
+│   ├── src/
+│   │   ├── controllers/   # Lógica de las rutas
+│   │   ├── middlewares/   # Auth, Roles, Errores
+│   │   ├── models/        # Integración con DB Supabase
+│   │   ├── routes/        # Definición de endpoints
+│   │   └── services/      # Lógica de negocio (Ej: PDF Certificates)
+│   ├── Dockerfile         # Receta Docker para Node
+│   └── supabase_*.sql     # Scripts y triggers de Base de Datos
+│
+├── Frontend-React/        # Cliente SPA (React/Vite)
+│   ├── src/
+│   │   ├── api/           # Llamadas HTTP con Axios
+│   │   ├── components/    # Componentes UI (Layout, Buttons, QR)
+│   │   ├── context/       # Estado global (AuthContext)
+│   │   ├── guards/        # Protección de rutas por Rol
+│   │   ├── hooks/         # React Query custom hooks
+│   │   └── pages/         # Vistas completas por módulo
+│   ├── Dockerfile         # Receta Docker Multi-stage con Nginx
+│   └── vercel.json        # Configuración de despliegue en Vercel
+│
+├── deploy.sh              # Script unificado para levantar Docker
+└── docker-compose.yml     # Orquestación de contenedores locales
 ```
 
 ---
 
-## 🚀 Inicio Rápido
+## 🚀 Inicio Rápido (Local)
 
 ### Prerrequisitos
+- Node.js 20+
+- Credenciales de Supabase (URL y KEY)
 
-- Node.js 18+
-- npm o yarn
-- Cuenta en Supabase
+### 💻 Entorno de Desarrollo Manual
 
-### 1. Clonar repositorio
-
-```bash
-cd c:\Users\alexsantiagosr\GestionTecnologia-SGEH
-```
-
-### 2. Configurar Backend
-
+**1. Levantar el Backend:**
 ```bash
 cd Backend-Express
 copy .env.example .env
-# Editar .env con credenciales de Supabase
-npm install
-npm start
-```
-
-### 3. Configurar Frontend
-
-```bash
-cd frontend
-copy .env.example .env
+# Edita las variables de entorno (Asegúrate de configurar el PORT y credenciales DB)
 npm install
 npm run dev
+# Disponible en: http://localhost:3001 (o el configurado)
 ```
 
-### 4. Acceder
-
-- **Frontend:** http://localhost:3000
-- **Backend:** http://localhost:5000
-
----
-
-## 📚 Documentación
-
-- [API Endpoints](./API.md)
-- [Modelo de Datos](./DATABASE.md)
-- [Guía de Deploy](./DEPLOY.md)
-
----
-
-## 🐳 Deploy con Docker
-
-### Local
-
+**2. Levantar el Frontend:**
 ```bash
-# Configurar variables
+cd Frontend-React
 copy .env.example .env
-# Editar .env
-
-# Construir y levantar
-docker-compose up -d
-
-# Ver logs
-docker-compose logs -f
+# Verifica que VITE_API_URL=http://localhost:3001/api (O apunte a tu backend)
+npm install
+npm run dev
+# Disponible en: http://localhost:5173
 ```
 
-### Producción
-
-Ver [DEPLOY.md](./DEPLOY.md) para instrucciones detalladas.
-
----
-
-## 👥 Usuarios por Defecto
-
-### Admin
-
-- **Email:** admin@sgeh.com
-- **Password:** admin123
-
-### Estudiante
-
-- **Email:** maria@sgeh.com
-- **Password:** 123456
-
----
-
-## 📊 Endpoints Principales
-
-### Auth
-
-```
-POST /api/auth/register    - Registro
-POST /api/auth/login       - Login
-GET  /api/auth/me          - Perfil actual
-```
-
-### Eventos
-
-```
-GET    /api/events          - Listar eventos
-POST   /api/events          - Crear evento (admin)
-PUT    /api/events/:id      - Actualizar (admin)
-DELETE /api/events/:id      - Eliminar (admin)
-```
-
-### Inscripciones
-
-```
-POST   /api/enrollments/:eventId  - Inscribirse
-GET    /api/enrollments/my-enrollments - Mis inscripciones
-DELETE /api/enrollments/:id       - Cancelar
-```
-
-### QR
-
-```
-GET  /api/qr/:enrollmentId        - Obtener QR
-GET  /api/qr/:enrollmentId/download - Descargar QR
-GET  /api/qr/validate/:qrToken    - Validar QR
-```
-
-### Certificados
-
-```
-GET  /api/certificates/my-certificates  - Mis certificados
-GET  /api/certificates/:eventId         - Descargar PDF
-```
-
----
-
-## 📝 Licencia
-
-MIT License - ver [LICENSE](LICENSE) para más detalles.
-
----
-
-## 🆘 Soporte
-
-Para issues o preguntas, crea un issue en el repositorio.
-
----
-
-**Desarrollado con ❤️ para la gestión eficiente de eventos académicos**
+*(Para despliegues productivos o contenerizados, revisa nuestra guía especializada en [DEPLOY.md](./DEPLOY.md)).*

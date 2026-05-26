@@ -1,248 +1,104 @@
-# 🐳 SGEH - Guía de Deploy con Docker
+# 🐳 SGEH - Guía de Despliegue y Operaciones
 
-## 📋 Prerrequisitos
-
-- Docker Desktop instalado
-- Docker Compose instalado
-- Cuenta en Supabase (base de datos ya configurada)
+Esta guía describe detalladamente cómo desplegar SGEH de manera local (usando Docker) y en la nube (Vercel y Render).
 
 ---
 
-## 🚀 Deploy Local con Docker
+## 📋 Prerrequisitos Globales
 
-### 1. Clonar el repositorio
+- Cuenta en **Supabase** para tu base de datos PostgreSQL.
+- Cuenta en **Vercel** (Hosting del Frontend).
+- Cuenta en **Render** (Hosting del Backend).
+- **Docker** y **Docker Compose** (Solo si despliegas localmente).
 
+---
+
+## ☁️ Despliegue en Producción (Arquitectura Real)
+
+SGEH está diseñado y configurado para operar con un Frontend en **Vercel** y un Backend en **Render**.
+
+### Fase 1: Base de Datos (Supabase)
+1. Crea un nuevo proyecto en Supabase.
+2. Ve al editor SQL y ejecuta los scripts proporcionados en la carpeta `Backend-Express/`:
+   - `supabase_add_is_live.sql`
+   - `supabase_auto_finish_events.sql`
+3. Ve a Settings -> API y obtén tu `Project URL` y `anon public key`.
+
+### Fase 2: Backend (Render.com)
+1. Crea un nuevo **Web Service**.
+2. Conecta este repositorio de GitHub.
+3. Especifica los siguientes parámetros de compilación:
+   - **Root Directory:** `Backend-Express`
+   - **Build Command:** `npm install`
+   - **Start Command:** `node src/server.js`
+4. Añade tus **Variables de Entorno** obligatorias:
+   - `NODE_ENV=production`
+   - `PORT=3001` *(o el puerto por defecto que asigne Render)*
+   - `SUPABASE_URL=tu_url_de_supabase`
+   - `SUPABASE_ANON_KEY=tu_anon_key_de_supabase`
+   - `JWT_SECRET=tu_clave_secreta_jwt`
+5. Despliega. Obtendrás una URL como: `https://sistema-de-gestion-de-eventos-y-x11t.onrender.com`.
+
+### Fase 3: Frontend (Vercel.com)
+1. Añade un **New Project** y conecta tu repositorio.
+2. Vercel detectará que es un proyecto de Vite. Configura el **Root Directory** a `Frontend-React`.
+3. Añade la siguiente **Variable de Entorno**:
+   - `VITE_API_URL=https://sistema-de-gestion-de-eventos-y-x11t.onrender.com/api` *(O la URL de Render que obtuviste en el paso anterior)*.
+4. Despliega. Tu aplicación estará disponible en una URL como: `https://sistema-de-gestion-de-eventos-y-asi-one.vercel.app/`.
+
+---
+
+## 🚀 Despliegue Local con Docker
+
+Para pruebas y despliegues *on-premise*, el proyecto contiene archivos `Dockerfile` optimizados para empaquetar ambas aplicaciones.
+
+### 1. Variables de Entorno
+
+En la raíz del proyecto, copia el archivo base:
 ```bash
-cd c:\Users\alexsantiagosr\GestionTecnologia-SGEH
-```
-
-### 2. Configurar variables de entorno
-
-```bash
-# Copiar el archivo de ejemplo
 copy .env.example .env
-
-# Editar .env con tus credenciales de Supabase
-notepad .env
+```
+Edita `.env` asegurándote de incluir:
+```env
+SUPABASE_URL=...
+SUPABASE_ANON_KEY=...
+JWT_SECRET=...
 ```
 
-### 3. Construir y levantar contenedores
+### 2. Construir e Iniciar Contenedores
+
+SGEH incluye un script `.sh` automatizado y un orquestador:
 
 ```bash
-# Construir imágenes
-docker-compose build
-
-# Levantar servicios
-docker-compose up -d
+# Construir e iniciar en segundo plano (Recomendado)
+docker-compose up -d --build
 ```
 
-### 4. Verificar servicios
+### 3. Accesos Locales por Defecto (Vía Docker)
+
+- **Frontend (Nginx):** `http://localhost` (Puerto 80)
+- **Backend API:** `http://localhost:5000` *(El docker-compose mapea el puerto interno al 5000).*
+
+### 4. Administración de Contenedores
 
 ```bash
-# Ver logs
-docker-compose logs -f
-
-# Ver estado de contenedores
-docker-compose ps
-```
-
-### 5. Acceder a la aplicación
-
-- **Frontend:** http://localhost
-- **Backend API:** http://localhost:5000
-- **Health Check:** http://localhost:5000/api/health
-
-### 6. Detener servicios
-
-```bash
-docker-compose down
-```
-
----
-
-## ☁️ Deploy a Producción
-
-### Opción A: Railway.app
-
-1. **Backend:**
-   ```bash
-   # Conectar Railway CLI
-   railway login
-   
-   # Inicializar proyecto
-   railway init
-   
-   # Deploy
-   railway up
-   ```
-
-2. **Variables de entorno en Railway Dashboard:**
-   - `SUPABASE_URL`
-   - `SUPABASE_ANON_KEY`
-   - `SUPABASE_SERVICE_ROLE_KEY`
-   - `JWT_SECRET`
-
-3. **Frontend (Vercel):**
-   ```bash
-   # Instalar Vercel CLI
-   npm i -g vercel
-   
-   # Deploy
-   cd frontend
-   vercel --prod
-   ```
-
-4. **Variables en Vercel:**
-   - `VITE_API_URL=https://tu-backend.railway.app/api`
-
----
-
-### Opción B: Render.com
-
-1. **Backend:**
-   - Crear Web Service en Render
-   - Conectar repositorio
-   - Build Command: `npm install`
-   - Start Command: `node src/server.js`
-   - Agregar variables de entorno
-
-2. **Frontend:**
-   - Crear Static Site en Render
-   - Build Command: `npm install && npm run build`
-   - Publish Directory: `dist`
-
----
-
-### Opción C: AWS (EC2 + ECS)
-
-1. **EC2 Instance:**
-   ```bash
-   # Instalar Docker
-   sudo yum update -y
-   sudo yum install -y docker
-   sudo service docker start
-   sudo usermod -a -G docker ec2-user
-   
-   # Instalar Docker Compose
-   sudo curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
-   sudo chmod +x /usr/local/bin/docker-compose
-   ```
-
-2. **Copiar archivos:**
-   ```bash
-   scp -r . ec2-user@your-ec2-ip:/home/ec2-user/sgeh
-   ```
-
-3. **Deploy:**
-   ```bash
-   ssh ec2-user@your-ec2-ip
-   cd sgeh
-   docker-compose up -d
-   ```
-
----
-
-## 🔧 Comandos Útiles
-
-```bash
-# Ver logs en tiempo real
-docker-compose logs -f
-
-# Ver logs de un servicio específico
+# Visualizar logs del backend
 docker-compose logs -f backend
+
+# Visualizar logs del frontend
 docker-compose logs -f frontend
 
-# Reiniciar servicios
+# Reiniciar
 docker-compose restart
 
-# Reconstruir desde cero
-docker-compose down -v
-docker-compose build --no-cache
-docker-compose up -d
-
-# Acceder a la shell del contenedor
-docker-compose exec backend sh
-docker-compose exec frontend sh
-
-# Ver uso de recursos
-docker stats
-
-# Limpiar recursos no usados
-docker system prune -a
-```
-
----
-
-## 📊 Monitoreo
-
-### Health Checks
-
-- **Backend:** http://localhost:5000/api/health
-- **Frontend:** http://localhost/
-
-### Logs
-
-```bash
-# Backend
-docker-compose logs backend
-
-# Frontend
-docker-compose logs frontend
-```
-
----
-
-## 🔒 Seguridad
-
-### Variables Sensibles
-
-NUNCA subas el archivo `.env` a Git. El proyecto incluye `.gitignore` configurado.
-
-### Producción
-
-1. Cambia `JWT_SECRET` a un valor único y seguro
-2. Usa HTTPS con certificado SSL (Let's Encrypt)
-3. Configura firewall para permitir solo puertos 80/443
-4. Rota las claves de Supabase periódicamente
-
----
-
-## 🆘 Troubleshooting
-
-### Error: "Cannot find module"
-
-```bash
+# Detener todos los servicios
 docker-compose down
-docker-compose build --no-cache
-docker-compose up -d
-```
-
-### Error: "Connection refused"
-
-Verifica que las variables de Supabase sean correctas en `.env`
-
-### Error: "Port already in use"
-
-```bash
-# Cambia los puertos en docker-compose.yml
-ports:
-  - "5001:5000"  # Backend
-  - "8080:80"    # Frontend
 ```
 
 ---
 
-## 📞 Soporte
-
-Para issues relacionados con Docker:
-```bash
-docker-compose ps
-docker-compose logs
-docker stats
-```
-
-Para issues de la aplicación:
-```bash
-docker-compose logs backend
-docker-compose logs frontend
-```
+## 🔒 Consideraciones de Seguridad
+- NUNCA subas archivos `.env` al control de versiones.
+- Asegúrate de configurar un `JWT_SECRET` largo e impredecible en tu panel de Render.
+- El servidor Node.js en Render tendrá SSL/HTTPS de manera automática.
+- En tu código backend, asegúrate de que el CORS permite el tráfico proveniente del dominio de Vercel configurado.
