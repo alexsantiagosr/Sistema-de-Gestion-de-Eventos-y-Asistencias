@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, Search, Edit2, Eye, CheckCircle, Play, BarChart2, ShieldCheck } from 'lucide-react';
+import { Plus, Search, Edit2, Eye, Play, BarChart2, ShieldCheck } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { useEvents, useDeleteEvent, useUpdateEventStatus, useStartVirtualRoom } from '@/hooks/useEvents';
+import { useEvents, useUpdateEventStatus, useStartVirtualRoom } from '@/hooks/useEvents';
 import { toast } from 'sonner';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
