@@ -168,6 +168,12 @@ const EventController = {
           message: error.message
         });
       }
+      if (['EVENT_ALREADY_STARTED', 'EVENT_NOT_EDITABLE'].includes(error.code)) {
+        return res.status(403).json({
+          error: 'Edición no permitida',
+          message: error.message
+        });
+      }
       next(error);
     }
   },

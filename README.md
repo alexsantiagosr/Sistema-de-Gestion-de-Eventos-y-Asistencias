@@ -43,7 +43,7 @@ SGEH es una plataforma full-stack profesional diseñada para gestionar **eventos
 
 | Servicio       | URL                   |
 | -------------- | --------------------- |
-| Frontend Local | http://localhost:5173 |
+| Frontend Local | http://localhost:3000 |
 | Backend Local  | http://localhost:3001 |
 
 *(Nota: En despliegues locales con Docker, el frontend puede estar expuesto en el puerto 80).*
@@ -185,7 +185,7 @@ copy .env.example .env
 # Verifica que VITE_API_URL=http://localhost:3001/api (O apunte a tu backend)
 npm install
 npm run dev
-# Disponible en: http://localhost:5173
+# Disponible en: http://localhost:3000
 ```
 
 *(Para despliegues productivos o contenerizados, revisa nuestra guía especializada en [DEPLOY.md](./DEPLOY.md)).*

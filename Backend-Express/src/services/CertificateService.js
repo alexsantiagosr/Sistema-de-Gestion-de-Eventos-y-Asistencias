@@ -179,103 +179,109 @@ const CertificateService = {
 
     // ─── 6. LOGOTIPO / TEXTO INSTITUCIONAL EN HEADER ───
     doc.fillColor(c.white);
-    doc.fontSize(11);
-    doc.font('Helvetica');
-    doc.text('SISTEMA DE GESTIÓN DE EVENTOS Y ASISTENCIAS', 0, 25, {
+    doc.fontSize(12);
+    doc.font('Helvetica-Bold');
+    doc.text('SISTEMA DE GESTIÓN DE EVENTOS Y ASISTENCIAS', 0, 30, {
       align: 'center',
-      width
+      width,
+      characterSpacing: 1
     });
     doc.fontSize(9);
+    doc.font('Helvetica');
     doc.fillColor(c.gold);
-    doc.text('SGEH — Plataforma Académica Institucional', 0, 45, {
+    doc.text('SGEH — Plataforma Académica Institucional', 0, 50, {
       align: 'center',
-      width
+      width,
+      characterSpacing: 0.5
     });
 
-    // ─── 7. LÍNEA DORADA DECORATIVA ───
-    const ornY = 130;
+    // ─── 7. MEDALLA VECTORIAL Y LÍNEAS ───
+    const ornY = 140;
     doc.lineWidth(0.5);
     doc.strokeColor(c.gold);
-    doc.moveTo(width / 2 - 120, ornY).lineTo(width / 2 - 20, ornY).stroke();
-    doc.moveTo(width / 2 + 20, ornY).lineTo(width / 2 + 120, ornY).stroke();
-    // Diamante central
-    const dX = width / 2, dY = ornY;
+    doc.moveTo(width / 2 - 160, ornY).lineTo(width / 2 - 40, ornY).stroke();
+    doc.moveTo(width / 2 + 40, ornY).lineTo(width / 2 + 160, ornY).stroke();
+    
+    // Dibujar Medalla en el centro
     doc.save();
+    doc.translate(width / 2, ornY - 5);
+    // Cintas de la medalla
+    doc.fillColor(c.darkGold);
+    doc.moveTo(-15, 10).lineTo(-25, 45).lineTo(-5, 35).lineTo(15, 45).lineTo(5, 10).fill();
+    // Circulo exterior oro
     doc.fillColor(c.gold);
-    doc.moveTo(dX, dY - 5).lineTo(dX + 5, dY).lineTo(dX, dY + 5).lineTo(dX - 5, dY).closePath().fill();
+    doc.circle(0, 0, 22).fill();
+    // Circulo interior azul
+    doc.fillColor(c.navy);
+    doc.circle(0, 0, 16).fill();
+    // Estrella central blanca
+    doc.fillColor(c.white);
+    doc.path('M 0 -8 L 2.5 -2.5 L 8 -2.5 L 3.5 1.5 L 5 7.5 L 0 4 L -5 7.5 L -3.5 1.5 L -8 -2.5 L -2.5 -2.5 Z').fill();
     doc.restore();
 
     // ─── 8. TÍTULO ───
     doc.fillColor(c.navy);
-    doc.fontSize(30);
+    doc.fontSize(34);
     doc.font('Helvetica-Bold');
-    doc.text('CERTIFICADO DE ASISTENCIA', 0, 145, {
+    doc.text('CERTIFICADO DE ASISTENCIA', 0, 185, {
       align: 'center',
       width,
-      characterSpacing: 2
+      characterSpacing: 3
     });
 
     // ─── 9. SUBTÍTULO ───
-    doc.fillColor(c.teal);
-    doc.fontSize(12);
+    doc.fillColor(c.subtle);
+    doc.fontSize(13);
     doc.font('Helvetica');
-    doc.text('Se otorga el presente certificado a:', 0, 190, {
+    doc.text('El presente certificado reconoce la participación académica de:', 0, 235, {
       align: 'center',
       width
     });
 
     // ─── 10. NOMBRE DEL ESTUDIANTE ───
     doc.fillColor(c.navy);
-    doc.fontSize(26);
+    doc.fontSize(32);
     doc.font('Helvetica-Bold');
-    doc.text(enrollment.user.name.toUpperCase(), 0, 215, {
+    doc.text(enrollment.user.name.toUpperCase(), 0, 265, {
       align: 'center',
       width,
-      characterSpacing: 1.5
+      characterSpacing: 1
     });
 
-    // Línea bajo el nombre
-    const nameWidth = Math.min(380, enrollment.user.name.length * 14);
-    doc.lineWidth(1);
+    // Línea gruesa bajo el nombre
+    const nameWidth = Math.min(450, enrollment.user.name.length * 18);
+    doc.lineWidth(1.5);
     doc.strokeColor(c.gold);
-    doc.moveTo(width / 2 - nameWidth / 2, 248).lineTo(width / 2 + nameWidth / 2, 248).stroke();
-
-    // Email
-    doc.fontSize(10);
-    doc.font('Helvetica');
-    doc.fillColor(c.subtle);
-    doc.text(enrollment.user.email, 0, 256, {
-      align: 'center',
-      width
-    });
+    doc.moveTo(width / 2 - nameWidth / 2, 305).lineTo(width / 2 + nameWidth / 2, 305).stroke();
 
     // ─── 11. CUERPO — POR HABER ASISTIDO ───
     doc.fillColor(c.text);
-    doc.fontSize(11);
+    doc.fontSize(12);
     doc.font('Helvetica');
-    doc.text('Por haber participado satisfactoriamente en el evento:', 0, 285, {
+    doc.text('Por haber asistido y completado exitosamente los requisitos del evento:', 0, 325, {
       align: 'center',
       width
     });
 
     // Nombre del evento
-    doc.fillColor(c.navy);
-    doc.fontSize(20);
+    doc.fillColor(c.teal);
+    doc.fontSize(22);
     doc.font('Helvetica-Bold');
-    doc.text(`"${enrollment.event.title}"`, 80, 308, {
+    doc.text(`"${enrollment.event.title}"`, 80, 350, {
       align: 'center',
       width: width - 160
     });
 
     // ─── 12. DETALLES DEL EVENTO ───
-    const detailY = 345;
-    doc.fontSize(9.5);
+    const detailY = 385;
+    doc.fontSize(10);
     doc.font('Helvetica');
     doc.fillColor(c.subtle);
 
     const detailParts = [
       this.formatDate(enrollment.event.date),
-      `${this.capitalize(enrollment.event.modality)}${enrollment.event.location ? ' — ' + enrollment.event.location : ''}`
+      `${this.capitalize(enrollment.event.modality)}${enrollment.event.location ? ' — ' + enrollment.event.location : ''}`,
+      `${enrollment.event.duration} minutos`
     ];
 
     doc.text(detailParts.join('     |     '), 60, detailY, {
@@ -284,59 +290,57 @@ const CertificateService = {
     });
 
     if (enrollment.event.organized_by) {
-      doc.text(`Organizado por: ${enrollment.event.organized_by}`, 0, detailY + 18, {
+      doc.text(`Organizado por: ${enrollment.event.organized_by}`, 0, detailY + 20, {
         align: 'center',
         width
       });
     }
 
-    // ─── 13. (SECCIÓN DE ASISTENCIA REMOVIDA PARA DISEÑO MÁS LIMPIO) ───
-
     // ─── 14. FIRMAS ───
-    const sigY = height - 140;
+    const sigY = height - 150;
 
     // Firma izquierda
-    const sigLeftX = width / 2 - 180;
+    const sigLeftX = width / 2 - 200;
     doc.lineWidth(1);
     doc.strokeColor(c.navy);
-    doc.moveTo(sigLeftX - 80, sigY).lineTo(sigLeftX + 80, sigY).stroke();
+    doc.moveTo(sigLeftX - 90, sigY).lineTo(sigLeftX + 90, sigY).stroke();
     doc.fillColor(c.navy);
-    doc.fontSize(10);
+    doc.fontSize(11);
     doc.font('Helvetica-Bold');
-    doc.text('COORDINADOR ACADÉMICO', sigLeftX - 80, sigY + 8, { align: 'center', width: 160 });
-    doc.fontSize(8);
+    doc.text('COORDINADOR ACADÉMICO', sigLeftX - 90, sigY + 10, { align: 'center', width: 180 });
+    doc.fontSize(9);
     doc.font('Helvetica');
     doc.fillColor(c.subtle);
-    doc.text('Dirección de Eventos', sigLeftX - 80, sigY + 22, { align: 'center', width: 160 });
+    doc.text('Dirección de Eventos', sigLeftX - 90, sigY + 24, { align: 'center', width: 180 });
 
     // Firma derecha
-    const sigRightX = width / 2 + 180;
+    const sigRightX = width / 2 + 200;
     doc.lineWidth(1);
     doc.strokeColor(c.navy);
-    doc.moveTo(sigRightX - 80, sigY).lineTo(sigRightX + 80, sigY).stroke();
+    doc.moveTo(sigRightX - 90, sigY).lineTo(sigRightX + 90, sigY).stroke();
     doc.fillColor(c.navy);
-    doc.fontSize(10);
+    doc.fontSize(11);
     doc.font('Helvetica-Bold');
-    doc.text('DIRECTOR DE PROGRAMA', sigRightX - 80, sigY + 8, { align: 'center', width: 160 });
-    doc.fontSize(8);
+    doc.text('DIRECTOR DE PROGRAMA', sigRightX - 90, sigY + 10, { align: 'center', width: 180 });
+    doc.fontSize(9);
     doc.font('Helvetica');
     doc.fillColor(c.subtle);
-    doc.text('Facultad Académica', sigRightX - 80, sigY + 22, { align: 'center', width: 160 });
+    doc.text('Facultad Académica', sigRightX - 90, sigY + 24, { align: 'center', width: 180 });
 
-    // ─── 15. PIE DE PÁGINA (sobre la franja navy) ───
-    const footY = height - 50;
+    // ─── 15. PIE DE PÁGINA ───
+    const footY = height - 45;
     const verificationCode = `CERT-${enrollment.event.title.replace(/[^a-z0-9]/gi, '').substring(0, 8).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
 
     doc.fillColor(c.muted);
-    doc.fontSize(7.5);
+    doc.fontSize(8);
     doc.font('Helvetica');
     doc.text(
-      `Certificado generado el ${new Date().toLocaleDateString('es-CO', { timeZone: 'America/Bogota', year: 'numeric', month: 'long', day: 'numeric' })}  •  Código de verificación: ${verificationCode}`,
+      `Certificado emitido el ${new Date().toLocaleDateString('es-CO', { timeZone: 'America/Bogota', year: 'numeric', month: 'long', day: 'numeric' })}  •  ID Verificación: ${verificationCode}`,
       0, footY, { align: 'center', width }
     );
     doc.text(
-      'SGEH — Sistema de Gestión de Eventos y Asistencias  •  Documento generado automáticamente',
-      0, footY + 13, { align: 'center', width }
+      'SGEH — Sistema Institucional de Gestión de Eventos y Asistencias',
+      0, footY + 14, { align: 'center', width }
     );
   },
 

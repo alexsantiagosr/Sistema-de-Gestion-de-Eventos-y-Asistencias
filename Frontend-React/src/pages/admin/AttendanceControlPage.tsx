@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ShieldCheck, CheckCircle, XCircle, Percent, Download, Save, Settings } from 'lucide-react';
 import { useEvents, useEvent, useUpdateEvent } from '@/hooks/useEvents';
-import { useEventEnrollments } from '@/hooks/useEnrollments';
+import { useEventEnrollments, useCheckIn, useCheckOut } from '@/hooks/useEnrollments';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import Spinner from '@/components/ui/Spinner';
 import CustomSelect from '@/components/ui/CustomSelect';
@@ -37,6 +37,10 @@ export default function AttendanceControlPage() {
 
   // Mutation to update event configuration
   const updateEventMutation = useUpdateEvent();
+  
+  // Mutations for manual check-in/out
+  const checkInMutation = useCheckIn();
+  const checkOutMutation = useCheckOut();
 
   // Local configuration states for in-memory recalculation
   const [localMinPercentage, setLocalMinPercentage] = useState<number>(80);
@@ -82,6 +86,26 @@ export default function AttendanceControlPage() {
     }
   };
 
+  const handleCheckIn = async (enrollmentId: string, userName: string) => {
+    try {
+      await checkInMutation.mutateAsync(enrollmentId);
+      toast.success(`Check-in registrado para ${userName}`);
+      refetchEnrollments();
+    } catch {
+      toast.error('Error al registrar check-in');
+    }
+  };
+
+  const handleCheckOut = async (enrollmentId: string, userName: string) => {
+    try {
+      await checkOutMutation.mutateAsync(enrollmentId);
+      toast.success(`Check-out registrado para ${userName}`);
+      refetchEnrollments();
+    } catch {
+      toast.error('Error al registrar check-out');
+    }
+  };
+
   // Perform in-memory calculations for the live display
   const duration = selectedEvent?.duration || 60;
   
@@ -108,24 +132,43 @@ export default function AttendanceControlPage() {
   const handleExportCSV = () => {
     if (!selectedEvent) return;
     
-    const headers = ['Nombre', 'Email', 'Check-in', 'Check-out', 'Minutos Activos', 'Duración Evento (min)', 'Asistencia %', 'Mínimo Requerido %', 'Estado Certificación'];
+    const generatedDate = new Date().toLocaleDateString('es-CO', { timeZone: 'America/Bogota', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    const csvRows: string[] = [];
+
+    // 1. Título y Metadata
+    csvRows.push('REPORTE DE ASISTENCIA Y CERTIFICACIÓN');
+    csvRows.push('');
+    csvRows.push(`Evento:,"${selectedEvent.title}"`);
+    csvRows.push(`Modalidad:,"${selectedEvent.modality.toUpperCase()}"`);
+    csvRows.push(`Fecha del evento:,"${new Date(selectedEvent.date).toLocaleDateString('es-CO', { timeZone: 'America/Bogota' })}"`);
+    csvRows.push(`Fecha de exportación:,"${generatedDate}"`);
+    csvRows.push('');
     
-    const rows = computedStudents.map((s) => [
-      s.users?.name || '',
-      s.users?.email || '',
-      s.session_start ? new Date(s.session_start).toLocaleString('es-CO', { timeZone: 'America/Bogota' }) : '',
-      s.session_end ? new Date(s.session_end).toLocaleString('es-CO', { timeZone: 'America/Bogota' }) : '',
-      s.activeMinutes.toString(),
-      duration.toString(),
-      `${s.percentage}%`,
-      `${localMinPercentage}%`,
-      s.isCertified ? 'Certificado' : 'No certificado'
+    // 2. Estadísticas
+    csvRows.push('ESTADÍSTICAS GENERALES');
+    csvRows.push(`Total de inscritos:,${totalStudents}`);
+    csvRows.push(`Asistentes aprobados (certificados):,${certifiedCount}`);
+    csvRows.push(`Asistentes no aprobados:,${uncertifiedCount}`);
+    csvRows.push(`Asistencia promedio global:,"${avgAttendance}%"`);
+    csvRows.push('');
+
+    // 3. Tabla principal
+    const headers = ['Nombre', 'Email', 'Check-in', 'Check-out', 'Minutos Activos', 'Duración Evento (min)', 'Asistencia %', 'Mínimo Requerido %', 'Estado Certificación'];
+    csvRows.push(headers.join(','));
+    
+    const dataRows = computedStudents.map((s) => [
+      `"${s.users?.name || ''}"`,
+      `"${s.users?.email || ''}"`,
+      `"${s.session_start ? new Date(s.session_start).toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit' }) : 'N/A'}"`,
+      `"${s.session_end ? new Date(s.session_end).toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit' }) : (s.session_start ? 'Activo' : 'N/A')}"`,
+      `"${s.activeMinutes} min"`,
+      `"${duration} min"`,
+      `"${s.percentage}%"`,
+      `"${localMinPercentage}%"`,
+      `"${s.isCertified ? 'Certificado' : 'No certificado'}"`
     ]);
 
-    const csvContent = [
-      headers.join(','),
-      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
-    ].join('\n');
+    const csvContent = "\uFEFF" + csvRows.concat(dataRows.map(r => r.join(','))).join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = window.URL.createObjectURL(blob);
@@ -347,6 +390,7 @@ export default function AttendanceControlPage() {
                             <th className="px-6 py-3 text-left text-xs font-semibold text-secondary uppercase tracking-wider">Tiempos</th>
                             <th className="px-6 py-3 text-left text-xs font-semibold text-secondary uppercase tracking-wider">Asistencia</th>
                             <th className="px-6 py-3 text-left text-xs font-semibold text-secondary uppercase tracking-wider">Estado</th>
+                            <th className="px-6 py-3 text-right text-xs font-semibold text-secondary uppercase tracking-wider">Acciones</th>
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-150">
@@ -392,6 +436,30 @@ export default function AttendanceControlPage() {
                                 <Badge variant={student.isCertified ? 'success' : 'error'}>
                                   {student.isCertified ? 'Certificado' : 'No certificado'}
                                 </Badge>
+                              </td>
+                              <td className="px-6 py-4 text-right">
+                                <div className="flex items-center justify-end space-x-2">
+                                  {student.status === 'active' && !student.check_in && (
+                                    <Button
+                                      variant="secondary"
+                                      size="sm"
+                                      onClick={() => handleCheckIn(student.id, student.users?.name || '')}
+                                      disabled={checkInMutation.isPending}
+                                    >
+                                      Check-in
+                                    </Button>
+                                  )}
+                                  {student.check_in && !student.check_out && (
+                                    <Button
+                                      variant="secondary"
+                                      size="sm"
+                                      onClick={() => handleCheckOut(student.id, student.users?.name || '')}
+                                      disabled={checkOutMutation.isPending}
+                                    >
+                                      Check-out
+                                    </Button>
+                                  )}
+                                </div>
                               </td>
                             </tr>
                           ))}

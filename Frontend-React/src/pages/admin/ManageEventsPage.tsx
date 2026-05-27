@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, Search, Edit2, Eye, CheckCircle, Trash2, Play, BarChart2, ShieldCheck } from 'lucide-react';
+import { Plus, Search, Edit2, Eye, CheckCircle, Play, BarChart2, ShieldCheck } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useEvents, useDeleteEvent, useUpdateEventStatus, useStartVirtualRoom } from '@/hooks/useEvents';
@@ -27,7 +27,7 @@ export default function ManageEventsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [modalityFilter, setModalityFilter] = useState<string>('');
-  const [eventToDelete, setEventToDelete] = useState<{ id: string; title: string } | null>(null);
+
   const [eventToCancel, setEventToCancel] = useState<{ id: string; title: string; status: string } | null>(null);
 
   const { data: eventsData, isLoading, refetch } = useEvents({
@@ -35,7 +35,7 @@ export default function ManageEventsPage() {
     modality: modalityFilter || undefined,
   });
 
-  const deleteMutation = useDeleteEvent();
+
   const updateStatusMutation = useUpdateEventStatus();
   const startRoomMutation = useStartVirtualRoom();
 
@@ -44,17 +44,7 @@ export default function ManageEventsPage() {
     .filter((event) => event.title.toLowerCase().includes(searchTerm.toLowerCase()))
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-  const handleDelete = async () => {
-    if (!eventToDelete) return;
 
-    try {
-      await deleteMutation.mutateAsync(eventToDelete.id);
-      toast.success(`Evento "${eventToDelete.title}" cancelado correctamente`);
-      setEventToDelete(null);
-    } catch {
-      toast.error('Error al cancelar el evento');
-    }
-  };
 
   const handleStatusChange = async (newStatus: 'active' | 'completed' | 'cancelled') => {
     if (!eventToCancel) return;
@@ -231,15 +221,6 @@ export default function ManageEventsPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => navigate(`/admin/events/${event.id}/attendance`)}
-                            className="inline-flex"
-                            title="Registrar Asistencias"
-                          >
-                            <CheckCircle className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
                             onClick={() => navigate(`/admin/attendance-control?eventId=${event.id}`)}
                             className="inline-flex text-success hover:bg-green-50"
                             title="Control y Configuración de Asistencia"
@@ -294,14 +275,7 @@ export default function ManageEventsPage() {
                               <Play className="w-4 h-4" />
                             </Button>
                           )}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setEventToDelete({ id: event.id, title: event.title })}
-                            className="inline-flex text-error hover:bg-error/10"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+
                         </div>
                       </TableCell>
                     </TableRow>
@@ -313,18 +287,7 @@ export default function ManageEventsPage() {
         </CardContent>
       </Card>
 
-      {/* Cancel Confirmation Dialog (using DELETE endpoint logically) */}
-      <ConfirmDialog
-        isOpen={!!eventToDelete}
-        onClose={() => setEventToDelete(null)}
-        onConfirm={handleDelete}
-        title="Cancelar evento"
-        message={`¿Estás seguro de que deseas cancelar el evento "${eventToDelete?.title}"? Esta acción no se puede deshacer y los usuarios inscritos serán notificados.`}
-        confirmText="Sí, cancelar"
-        cancelText="Volver"
-        variant="danger"
-        isLoading={deleteMutation.isPending}
-      />
+
 
       {/* Status Change Dialog */}
       <ConfirmDialog

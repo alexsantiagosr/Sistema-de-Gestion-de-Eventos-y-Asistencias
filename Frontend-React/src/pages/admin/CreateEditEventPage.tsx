@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, AlertTriangle } from 'lucide-react';
 import { useEvent, useCreateEvent, useUpdateEvent } from '@/hooks/useEvents';
 import { toast } from 'sonner';
 import Button from '@/components/ui/Button';
@@ -126,6 +126,21 @@ export default function CreateEditEventPage() {
     }
   };
 
+  // Verificar si el evento ya inició o finalizó (bloquear edición)
+  const eventHasStarted = isEdit && eventData?.event
+    ? new Date(eventData.event.date).getTime() <= Date.now()
+    : false;
+
+  const eventIsFinishedOrCancelled = isEdit && eventData?.event
+    ? (eventData.event.status === 'finished' || eventData.event.status === 'completed' || eventData.event.status === 'cancelled')
+    : false;
+
+  const isEditBlocked = eventHasStarted || eventIsFinishedOrCancelled;
+
+  const blockedMessage = eventIsFinishedOrCancelled
+    ? 'Este evento ya finalizó o fue cancelado. No es posible modificar su información.'
+    : 'Este evento ya inició. No es posible modificar su información.';
+
   if (isEdit && isLoadingEvent) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -154,6 +169,16 @@ export default function CreateEditEventPage() {
 
       {/* Form */}
       <form onSubmit={handleSubmit(onSubmit)}>
+        {/* Alerta de bloqueo de edición */}
+        {isEdit && isEditBlocked && (
+          <div className="mb-4 lg:mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="font-medium text-amber-800">Edición no permitida</p>
+              <p className="text-sm text-amber-700 mt-1">{blockedMessage}</p>
+            </div>
+          </div>
+        )}
         <Card className="mb-4 lg:mb-6">
           <CardHeader>
             <CardTitle>Información Básica</CardTitle>
@@ -288,6 +313,7 @@ export default function CreateEditEventPage() {
             type="submit"
             isLoading={createMutation.isPending || updateMutation.isPending}
             className="w-full sm:w-auto"
+            disabled={isEditBlocked}
           >
             {isEdit ? 'Actualizar Evento' : 'Crear Evento'}
           </Button>

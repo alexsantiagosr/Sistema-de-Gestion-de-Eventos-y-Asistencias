@@ -13,19 +13,31 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middlewares
-// Configuración de CORS principal
-app.use(cors({
-  origin: "https://sistema-de-gestion-de-eventos-y-asi-one.vercel.app",
+const allowedOrigins = [
+  "https://sistema-de-gestion-de-eventos-y-asi-one.vercel.app",
+  "https://sistema-de-gestion-de-eventos-y-asistencias-inys1csc8.vercel.app",
+  "https://sistema-de-gestion-de-event-git-a2c93a-alexsantiagosrs-projects.vercel.app",
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "http://localhost:3002",
+  "http://localhost:5173"
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
-}));
+};
 
-// Manejo de peticiones preflight (OPTIONS) con la misma configuración
-app.options('*', cors({
-  origin: "https://sistema-de-gestion-de-eventos-y-asi-one.vercel.app",
-  credentials: true
-}));
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 
 

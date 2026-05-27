@@ -18,7 +18,7 @@ npm install
 npm run dev
 ```
 
-El frontend estará disponible típicamente en **http://localhost:5173**.
+El frontend estará disponible típicamente en **http://localhost:3000**.
 
 ## 📁 Arquitectura del Cliente
 

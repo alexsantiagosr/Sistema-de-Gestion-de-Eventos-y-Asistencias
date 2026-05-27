@@ -31,6 +31,17 @@ export default function EventsPage() {
     .filter((event) => {
       const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesModality = !modalityFilter || event.modality === modalityFilter;
+
+      // Para estudiantes: ocultar eventos finalizados, cancelados o ya vencidos
+      if (isStudent) {
+        const isFinishedOrCancelled = event.status === 'completed' || event.status === 'finished' || event.status === 'cancelled';
+        if (isFinishedOrCancelled) return false;
+
+        const eventEndTime = new Date(event.date).getTime() + (event.duration * 60 * 1000);
+        const isExpired = Date.now() > eventEndTime;
+        if (isExpired) return false;
+      }
+
       return matchesSearch && matchesModality;
     })
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());

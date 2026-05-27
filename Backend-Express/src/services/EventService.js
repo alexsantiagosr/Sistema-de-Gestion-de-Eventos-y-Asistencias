@@ -192,6 +192,21 @@ const EventService = {
     // Verificar que existe
     const existing = await this.getEventById(id);
 
+    // Bloquear edición si el evento ya inició
+    const eventStartTime = new Date(existing.date).getTime();
+    if (Date.now() >= eventStartTime) {
+      const error = new Error('No se puede editar un evento que ya ha iniciado');
+      error.code = 'EVENT_ALREADY_STARTED';
+      throw error;
+    }
+
+    // Bloquear edición si el evento está finalizado o cancelado
+    if (existing.status === 'finished' || existing.status === 'completed' || existing.status === 'cancelled') {
+      const error = new Error('No se puede editar un evento finalizado o cancelado');
+      error.code = 'EVENT_NOT_EDITABLE';
+      throw error;
+    }
+
     // Si actualiza fecha, validar que no sea pasada (con 15 min de margen)
     if (updates.date) {
       const eventDate = new Date(updates.date);
